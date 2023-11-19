@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Anime Database</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+  <header>
+    <h1>Anime Database</h1>
+    <button id="addAnimeBtn">Add Anime</button>
+    <button id="loadDataBtn">Load Anime</button>
+    <button id="saveDataBtn">Save Anime</button>
+    <button id="resetLocal">Reset Local</button>
+    Filter <input id="filter"></input>
+  </header>
+  
+  <main>
+    <div class="block">
+      <h2>Long <button id="longButton">Toggle</button></h2>
+      <div id="longSection" class="animeSection">
+          <ul id="longList"></ul>
+      </div>
+    </div>
+    <div class="block">
+      <h2>Short <button id="shortButton">Toggle</button></h2>
+      <div id="shortSection" class="animeSection">
+          <ul id="shortList"></ul>
+      </div>
+      
+    </div>
+    <div class="block">
+      <h2>Inactive <button id="inactiveButton">Toggle</button></h2>
+      <div id="inactiveSection" class="animeSection">
+          <ul id="inactiveList"></ul>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
