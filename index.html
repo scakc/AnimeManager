@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Anime Database</title>
-  <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
@@ -18,21 +19,21 @@
   
   <main>
     <div class="block">
-      <h2>Long <button id="longButton">Toggle</button></h2>
-      <div id="longSection" class="animeSection">
+      <h2>Long <button id="longButton">Hide</button><button class="longCollapseBtn fas fa-angle-double-up"></button></h2>
+      <div id="longSection" class="animeSection masked">
           <ul id="longList"></ul>
       </div>
     </div>
     <div class="block">
-      <h2>Short <button id="shortButton">Toggle</button></h2>
-      <div id="shortSection" class="animeSection">
+      <h2>Short <button id="shortButton">Hide</button><button class="shortCollapseBtn fas fa-angle-double-up"></button></h2>
+      <div id="shortSection" class="animeSection masked">
           <ul id="shortList"></ul>
       </div>
       
     </div>
     <div class="block">
-      <h2>Inactive <button id="inactiveButton">Toggle</button></h2>
-      <div id="inactiveSection" class="animeSection">
+      <h2>Inactive <button id="inactiveButton">Hide</button><button class="inactiveCollapseBtn fas fa-angle-double-up"></button></h2>
+      <div id="inactiveSection" class="animeSection masked">
           <ul id="inactiveList"></ul>
       </div>
     </div>

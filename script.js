@@ -114,11 +114,12 @@ function loadData() {
   renderAnimeList('long');
   renderAnimeList('short');
   renderAnimeList('inactive');
+  console.log('Started Rendering data');
   
   // Add a 1-second delay before refreshing the window
   setTimeout(() => {
     location.reload();
-  }, 2000);
+  }, 3000);
 }
 
 // Function to save animes
@@ -237,9 +238,58 @@ function renderAnimeList(status) {
       }
     });
     listItem.appendChild(deleteButton);
-
     listElement.appendChild(listItem);
   });
+  
+  const expandButton = document.createElement('button');
+  expandButton.setAttribute('id', `${status}ExpandBtn`);
+  expandButton.classList.add(`expandBtn`);
+  // expandButton.textContent = '▼';
+  
+  const firstAnimeItem = document.getElementsByClassName('anime-item')[0];
+  expandButton.style.width = firstAnimeItem.offsetWidth + 'px';
+
+  // set width of class block same as above
+  // const blockDiv = document.getElementsByClassName('block');
+  // blockDiv[0].style.width = firstAnimeItem.offsetWidth + 50 + 'px';
+
+  // put text of button at center despite flex and float left
+  const expandButtonText = document.createElement('i');
+  expandButtonText.classList.add('fas', 'fa-angle-double-down'); 
+  // expandButtonText.textContent = '▼';
+  expandButtonText.classList.add(`expandBtnSpan`);
+  expandButton.appendChild(expandButtonText);
+  expandButtonText.style.marginLeft = parseInt(firstAnimeItem.offsetWidth/2) + 'px';
+  expandButtonText.style.marginTop = '20px';
+  
+  expandButton.addEventListener('click', () => {
+    const section = document.getElementById(`${status}Section`);
+    section.style.maxHeight = section.style.maxHeight != 'none' ? 'none' : '300px';
+    section.style.background = section.style.background != 'none' ? 'none' : 'linear-gradient(to top, #000, transparent);';
+    section.classList.toggle('masked');
+
+    // toggle expandButton from bottom of listElement to top of listElement as f
+    // when height is none then put expand button at top else put it at bottom
+    const collapseBtn = document.getElementsByClassName(`${status}CollapseBtn`);
+    // console.log(collapseBtn);
+    if (section.style.maxHeight != 'none') {
+      expandButton.style.display = 'flex';
+      // hide collpase button
+      collapseBtn[0].style.display = 'none';
+    } else {
+      // hide expand button
+      expandButton.style.display = 'none';
+      // show collpase button
+      collapseBtn[0].style.display = 'inline-block';
+    }
+  });
+  listElement.appendChild(expandButton);
+
+  // set width of class block same as content 
+  const blockDiv = document.getElementsByClassName('block');
+  for (let i = 0; i < blockDiv.length; i++) {
+    blockDiv[i].style.width = firstAnimeItem.offsetWidth*1.05 + 'px';
+  }
 }
 
 // Function to update the anime rating
@@ -262,20 +312,35 @@ function updateEpisodeCount(animeName, episodesWatched) {
   }
 }
 
-document.getElementById('longButton').addEventListener('click', () => {
-  const longSection = document.getElementById('longSection');
-  longSection.style.display = longSection.style.display === 'none' ? 'block' : 'none';
-});
+const sections = ['long', 'short', 'inactive'];
 
-document.getElementById('shortButton').addEventListener('click', () => {
-  const shortSection = document.getElementById('shortSection');
-  shortSection.style.display = shortSection.style.display === 'none' ? 'block' : 'none';
-});
+for (let i = 0; i < sections.length; i++) {
+  const section = sections[i];
+  const button = document.getElementById(`${section}Button`);
+  const sectionElement = document.getElementById(`${section}Section`);
 
-document.getElementById('inactiveButton').addEventListener('click', () => {
-  const inactiveSection = document.getElementById('inactiveSection');
-  inactiveSection.style.display = inactiveSection.style.display === 'none' ? 'block' : 'none';
-});
+  button.addEventListener('click', () => {
+    sectionElement.style.display = sectionElement.style.display === 'none' ? 'block' : 'none';
+    button.innerText = button.innerText === 'Hide' ? 'Show' : 'Hide';
+  });
+}
+
+// add event listeners for collapse buttons in for loop
+for (let i = 0; i < sections.length; i++) {
+  const section = sections[i];
+  const collapseBtn = document.getElementsByClassName(`${section}CollapseBtn`);
+  
+  // add event listener for collapse buttons, on click hide the button and show expand button
+  collapseBtn[0].addEventListener('click', () => {
+    const sectionElement = document.getElementById(`${section}Section`);
+    sectionElement.style.maxHeight = '300px';
+    sectionElement.style.background = 'linear-gradient(to top, #000, transparent)';
+    sectionElement.classList.toggle('masked');
+    collapseBtn[0].style.display = 'none';
+    const expandBtn = document.getElementById(`${section}ExpandBtn`);
+    expandBtn.style.display = 'flex';
+  });
+}
 
 // Add on change listener for element id filter to call function filter
 document.getElementById('filter').addEventListener('change', () => {

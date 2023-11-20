@@ -8,7 +8,22 @@ body {
   background-size: 100dvw 100dvh;
   background-attachment: fixed;
   padding: 20px;
-}
+  
+  scrollbar-width: thin;
+  scrollbar-color: linear-gradient(to bottom, #000, #1e90ff, #000) #000;
+  }
+
+  body::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  body::-webkit-scrollbar-track {
+    background: #000; /* Same as the background color */
+  }
+
+  body::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #000, #1e90ff, #000);
+  }
 
 h1 {
   color: #007BFF;
@@ -81,10 +96,26 @@ button:hover {
 }
 
 #longSection, #shortSection, #inactiveSection {
-  display: block;
   /* background-color: #3b3b3b; Slightly lighter gray background */
   color: #f0f0f0; /* Light gray text */
+  
+  position: relative;
+  overflow: hidden;
+  max-height: 300px;
+  /* background: linear-gradient(to top, #000, transparent); */
 }
+
+#longSection.masked::after, #shortSection.masked::after, #inactiveSection.masked::after {
+  color: #f0f0f0;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%; 
+  height: 100%;
+  background: linear-gradient(to top, #000, transparent);
+  pointer-events: none; 
+} 
 
 input {
   background-color: #2b2b2b; /* Slightly lighter gray background */
@@ -96,8 +127,8 @@ input {
 }
 
 .block{
-  display: block;
-  float: left;
+  display: inline-block;
+  width: fit-content;
 }
 
 span {
@@ -111,4 +142,57 @@ span {
   /* padding-left: 10px;
   padding-top: 10px; */
   border-radius: 5px;
+}
+
+/* .animeSection {
+  position: relative;
+  overflow: hidden;
+  max-height: 300px;
+} */
+
+/* .animeSection::after  {
+  overflow: hidden;
+  background: linear-gradient(to bottom, #1b1b1b, #000);
+  max-height: 300px;
+} */
+
+/* .animeSection::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, #000, transparent);
+  pointer-events: none; 
+} */
+
+.expandBtn {
+  position: absolute;
+  bottom: 0;
+  z-index: 9999; /* Set a higher z-index value */
+  margin-bottom: 0px;
+  margin-left: 0;
+  padding: 2px;
+  /* border: 1px solid #1b1b1b;  */
+  border-radius: 5px;
+  background: linear-gradient(to top, #000, transparent); 
+  color: #f0f0f0; /* Light gray text */
+  width: auto;
+  display: flex;
+  float: left;
+  height: 50px;
+}
+
+.expandBtn:hover {
+  background: linear-gradient(to top, #000, transparent); 
+}
+
+.longCollapseBtn, .shortCollapseBtn, .inactiveCollapseBtn {
+  display: none;
+  background: #000;
+}
+
+.expandBtnSpan{
+  background-color: transparent; /* Slightly lighter gray background */
 }
