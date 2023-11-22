@@ -8,7 +8,7 @@ A anime manager to add and keep track of animes/donghua/other forms of it that y
 4. Fill details in prompts like Name, Rating, No. Episodes Watched, Watching URL.
 5. Update the animes if needed as you want.
    
-![Sample](res/image.png)
+![Sample](res/image.jpg)
 
 ### Features
 1. In Filter tab
