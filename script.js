@@ -2,6 +2,12 @@
 // Function to save data to a file
 let animeList = [];
 window.animeList = animeList;
+window.animePropertyList = [];
+window.visibleProperties = ['rating', 'episodesWatched'];
+window.decimalProperties = {
+  rating: 0.1,
+  episodesWatched: 1,
+};
 
 function saveToFile(data) {
   const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
@@ -32,9 +38,11 @@ function loadFromFile() {
       const contents = event.target.result;
       const data = JSON.parse(contents);
       window.animeList = data;
+      window.animePropertyList = Object.keys(window.animeList[0]);
       localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
       console.log('Is localStorage empty?', isLocalStorageEmpty()); // Output: true or false
       console.log('Loaded data:', window.animeList);
+      loadDataFromLocalStorage();
     };
     reader.readAsText(file);
   });
@@ -93,16 +101,23 @@ function updateEpisodes(animeName, increment) {
 
 // Function to add a new anime
 function addNewAnime() {
-  const newAnime = {
-    name: prompt('Enter anime name:'),
-    episodesWatched: parseInt(prompt('Enter number of episodes watched:')),
-    status: prompt('Enter status (long, short, inactive):'),
-    rating: parseFloat(prompt('Enter rating:')),
-    link: prompt('Enter link:'),
-  };
-  window.animeList.push(newAnime);
+  const numAnimes = 1; //parseInt(prompt('Enter the number of animes you want to add:'));
+
+  for (let i = 0; i < numAnimes; i++) {
+    const newAnime = {};
+
+    const properties = window.animePropertyList;
+
+    for (let j = 0; j < properties.length; j++) {
+      const property = properties[j];
+      newAnime[property] = prompt(`Enter ${property}:`);
+    }
+
+    window.animeList.push(newAnime);
+  }
+
   localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
-  
+
   renderAnimeList('long');
   renderAnimeList('short');
   renderAnimeList('inactive');
@@ -134,6 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load data from localStorage or use initial data
   const storedData = localStorage.getItem('animeList');
   window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
+  loadDataFromLocalStorage();
+  // window.animePropertyList = Object.keys(window.animeList[0]);
 
   renderAnimeList('long');
   renderAnimeList('short');
@@ -144,9 +161,171 @@ document.getElementById('addAnimeBtn').addEventListener('click', addNewAnime);
 document.getElementById('loadDataBtn').addEventListener('click', loadData);
 document.getElementById('saveDataBtn').addEventListener('click', saveData);
 document.getElementById('resetLocal').addEventListener('click', resetLocalStorage);
+// Event listener for add/del property button
+document.getElementById('addPropBtn').addEventListener('click', addProperty);
+document.getElementById('delPropBtn').addEventListener('click', delProperty);
+
+// function to update localStorage
+function updateLocalStorage() {
+  // Update localStorage
+  localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update animeList
+  localStorage.setItem('propertyList', JSON.stringify(window.animePropertyList)); // Update propertyList
+  localStorage.setItem('visibleProperties', JSON.stringify(window.visibleProperties)); // Update visibleProperties
+  localStorage.setItem('decimalProperties', JSON.stringify(window.decimalProperties)); // Update decimalProperties
+}
+
+// function to load data from localStorage
+function loadDataFromLocalStorage() {
+  // Load data from localStorage or use initial data
+  const storedData = localStorage.getItem('animeList');
+  window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
+
+  if (window.animeList.length === 0) {
+    return;
+  }
+
+  window.animePropertyList = Object.keys(window.animeList[0]);
+  const storedVisibleProperties = localStorage.getItem('visibleProperties');
+  window.visibleProperties = storedVisibleProperties ? JSON.parse(storedVisibleProperties) : window.visibleProperties;
+  const storedDecimalProperties = localStorage.getItem('decimalProperties');
+  window.decimalProperties = storedDecimalProperties ? JSON.parse(storedDecimalProperties) : window.decimalProperties;
+}
+
+// Function to add a new property to animePropertyList
+function addProperty() {
+  // Add a new property to animePropertyList
+  const newProperty = prompt('Enter new property:');
+  const newPropertyType = prompt('Enter new property type:');
+
+  if (newProperty === null || newProperty === '' || newProperty === undefined || window.animePropertyList.includes(newProperty)) {
+    return;
+  }
+
+  window.animePropertyList.push(newProperty);
+
+  if (newPropertyType === 'number') {
+    // Add to decimal properties
+    const newPropertyStep = prompt('Enter new property step:');
+    window.decimalProperties[newProperty] = newPropertyStep; 
+  }
+
+  // Add a new checkbox to dropdown content
+  const dropdownContent = document.querySelector('.dropdown-content');
+  const checkboxLabel = document.createElement('label');
+  const checkbox = document.createElement('input');
+  checkbox.setAttribute('type', 'checkbox');
+  checkbox.setAttribute('value', `${newProperty}`);
+  checkboxLabel.appendChild(checkbox);
+  checkboxLabel.appendChild(document.createTextNode(` ${newProperty}`));
+  dropdownContent.appendChild(checkboxLabel);
+
+  // Add the new property to each anime
+  const animeList = window.animeList;
+  for (let i = 0; i < animeList.length; i++) {
+    animeList[i][newProperty] = null;
+  }
+
+  updateLocalStorage();
+  renderAnimeList('long');
+  renderAnimeList('short');
+  renderAnimeList('inactive');
+}
+
+// Function to delete a property from animePropertyList
+function delProperty() {
+  // Add a new property to animePropertyList
+  const newProperty = prompt('Enter Del property:');
+
+  if (newProperty === null || newProperty === '' || newProperty === undefined || !window.animePropertyList.includes(newProperty)) {
+    return;
+  }
+
+  // Remove the property from animePropertyList
+  const index = window.animePropertyList.indexOf(newProperty);
+  if (index !== -1) {
+    window.animePropertyList.splice(index, 1);
+  }
+
+  // Remove from visible properties and decimal properties
+  const visiblePropertiesIndex = window.visibleProperties.indexOf(newProperty);
+  if (visiblePropertiesIndex !== -1) {
+    window.visibleProperties.splice(visiblePropertiesIndex, 1);
+  }
+  delete window.decimalProperties[newProperty];
+
+  // Remove the property from each anime
+  const animeList = window.animeList;
+  for (let i = 0; i < animeList.length; i++) {
+    delete animeList[i][newProperty];
+  }
+
+  // Update localStorage
+  updateLocalStorage();
+  renderAnimeList('long');
+  renderAnimeList('short');
+  renderAnimeList('inactive');
+}
 
   // Function to render anime list based on status
 function renderAnimeList(status) {
+
+  loadDataFromLocalStorage();
+
+  // Show visible properties
+  const dropdownContent = document.querySelector('.dropdown-content');
+  dropdownContent.innerHTML = ''
+
+  if (window.animeList.length === 0) {
+    return;
+  }
+  
+  window.animePropertyList = Object.keys(window.animeList[0]);
+  const properties = window.animePropertyList;
+  const invisibleProeprties = ["status", "link", "name"];
+  for (let i = 0; i < properties.length ; i++) {
+
+    if (invisibleProeprties.includes(properties[i])) {
+      continue;
+    }
+
+    const checkboxLabel = document.createElement('label');
+    const checkbox = document.createElement('input');
+    checkbox.setAttribute('type', 'checkbox');
+    checkbox.setAttribute('value', `${properties[i]}`);
+    checkboxLabel.appendChild(checkbox);
+    checkboxLabel.appendChild(document.createTextNode(` ${properties[i]}`));
+    dropdownContent.appendChild(checkboxLabel);
+
+    // set checkbox to true for elements in window.visibleProperties
+    if (window.visibleProperties.includes(properties[i])) {
+      checkbox.checked = true;
+    }
+
+    // Add a toggle event listener for checkboxes as is when checked change the visibel properties accordingly
+    // as if checked then add to visible properties else remove from visible properties
+    checkbox.addEventListener('change', (event) => {
+      const property = event.target.value;
+      if (event.target.checked) {
+        window.visibleProperties.push(property);
+      } else {
+        const index = window.visibleProperties.indexOf(property);
+        if (index !== -1) {
+          window.visibleProperties.splice(index, 1);
+        }
+      }
+
+      // Update localStorage with visible properties, decimal properties, property list
+      localStorage.setItem('visibleProperties', JSON.stringify(window.visibleProperties)); // Update visibleProperties
+      localStorage.setItem('decimalProperties', JSON.stringify(window.decimalProperties)); // Update decimalProperties
+      localStorage.setItem('propertyList', JSON.stringify(window.animePropertyList)); // Update propertyList
+
+      renderAnimeList("long");
+      renderAnimeList("short");
+      renderAnimeList("inactive");
+    });
+  }
+
+  // Render Properties
   const filteredList = filter(window.animeList).filter(anime => anime.status === status);
   const listElement = document.getElementById(`${status}List`);
   listElement.innerHTML = '';
@@ -168,36 +347,40 @@ function renderAnimeList(status) {
     // link.style.width = '20px'; // Set the width to 200 pixels
     listItem.appendChild(link);
 
-    // updating episode watched
-    const episodesWatched = document.createElement('input');
-    episodesWatched.setAttribute('type', 'number');
-    episodesWatched.setAttribute('class', 'editable-rating');
-    episodesWatched.setAttribute('value', anime.episodesWatched);
-    // add text before the input
-    const episodesWatchedText = document.createElement('span');
-    episodesWatchedText.textContent = 'Episodes watched:';
-    listItem.appendChild(episodesWatchedText);
-    episodesWatched.addEventListener('change', (event) => {
-      const newepisodesWatched = parseInt(event.target.value);
-      updateEpisodeCount(anime.name, newepisodesWatched);
-    });
-    listItem.appendChild(episodesWatched);
+    // add visible properties to list item
+    for (let i = 0; i < window.visibleProperties.length; i++) {
+      const property = window.visibleProperties[i];
+      const propertyInput = document.createElement('input');
+      propertyInput.setAttribute('type', 'number');
 
-    // updating rating of item
-    const ratingInput = document.createElement('input');
-    ratingInput.setAttribute('type', 'number');
-    ratingInput.setAttribute('class', 'editable-rating');
-    ratingInput.setAttribute('value', anime.rating);
-    // add text before the input
-    const ratingText = document.createElement('span');
-    ratingText.textContent = 'Rating:';
-    listItem.appendChild(ratingText);
-    ratingInput.setAttribute('step', '0.1'); // Set step attribute to allow floating point values
-    ratingInput.addEventListener('change', (event) => {
-      const newRating = parseFloat(event.target.value);
-      updateRating(anime.name, newRating);
-    });
-    listItem.appendChild(ratingInput);
+      const isDecimal = window.decimalProperties[property] !== undefined;
+
+      if (isDecimal) {
+        propertyInput.setAttribute('type', 'number');
+        propertyInput.setAttribute('step', `${decimalProperties[property]}`);
+      }
+      else{
+        propertyInput.setAttribute('type', 'text');
+      }
+
+      propertyInput.setAttribute('class', 'editable-rating');
+      propertyInput.classList.add(`${property}Input`);
+      propertyInput.setAttribute('value', anime[property]);
+      propertySpan = document.createElement('span');
+      propertySpan.classList.add('propertySpan');
+      propertySpan.classList.add(`${property}Span`);
+      propertySpan.textContent = `${property.charAt(0).toUpperCase()}${property.slice(1)}`;
+      listItem.appendChild(propertySpan);
+      propertyInput.addEventListener('blur', (event) => {
+        let newProperty = event.target.value;
+        if (isDecimal){
+          newProperty = parseFloat(event.target.value);
+        }
+        // console.log(property, newProperty);
+        updateProperty(anime.name, property, newProperty);
+      });
+      listItem.appendChild(propertyInput);
+    }
 
     // Add an update button
     const updateButton = document.createElement('button');
@@ -241,12 +424,18 @@ function renderAnimeList(status) {
     listElement.appendChild(listItem);
   });
   
+  // Check if collpaseBtn is visible
+  const firstAnimeItem = document.getElementsByClassName('anime-item')[0];
+
+  if (firstAnimeItem === undefined) {
+    return;
+  }
+  
   const expandButton = document.createElement('button');
   expandButton.setAttribute('id', `${status}ExpandBtn`);
   expandButton.classList.add(`expandBtn`);
   // expandButton.textContent = '▼';
   
-  const firstAnimeItem = document.getElementsByClassName('anime-item')[0];
   expandButton.style.width = firstAnimeItem.offsetWidth + 'px';
 
   // set width of class block same as above
@@ -261,8 +450,22 @@ function renderAnimeList(status) {
   expandButton.appendChild(expandButtonText);
   expandButtonText.style.marginLeft = parseInt(firstAnimeItem.offsetWidth/2) + 'px';
   expandButtonText.style.marginTop = '20px';
+
+  const section = document.getElementById(`${status}Section`);
+  const collapseBtn = document.getElementsByClassName(`${status}CollapseBtn`);
+  if (section.style.maxHeight != 'none') {
+    expandButton.style.display = 'flex';
+    // hide collpase button
+    collapseBtn[0].style.display = 'none';
+  } else {
+    // hide expand button
+    expandButton.style.display = 'none';
+    // show collpase button
+    collapseBtn[0].style.display = 'inline-block';
+  }
   
   expandButton.addEventListener('click', () => {
+    
     const section = document.getElementById(`${status}Section`);
     section.style.maxHeight = section.style.maxHeight != 'none' ? 'none' : '300px';
     section.style.background = section.style.background != 'none' ? 'none' : 'linear-gradient(to top, #000, transparent);';
@@ -283,6 +486,7 @@ function renderAnimeList(status) {
       collapseBtn[0].style.display = 'inline-block';
     }
   });
+
   listElement.appendChild(expandButton);
 
   // set width of class block same as content 
@@ -292,25 +496,19 @@ function renderAnimeList(status) {
   }
 }
 
-// Function to update the anime rating
-function updateRating(animeName, newRating) {
+// Function to update the anime rating or episodes watched
+function updateProperty(animeName, property, value) {
   const anime = window.animeList.find(anime => anime.name === animeName);
   if (anime) {
-    anime.rating = newRating;
+    anime[property] = value;
     localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
     renderAnimeList(anime.status);
   }
 }
 
-// Function to update the anime episodes watched
-function updateEpisodeCount(animeName, episodesWatched) {
-  const anime = window.animeList.find(anime => anime.name === animeName);
-  if (anime) {
-    anime.episodesWatched = episodesWatched;
-    localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
-    renderAnimeList(anime.status);
-  }
-}
+// Usage example:
+// updateProperty('Anime 1', 'rating', 5); // Update anime rating
+// updateProperty('Anime 2', 'episodesWatched', 15); // Update episodes watched
 
 const sections = ['long', 'short', 'inactive'];
 
@@ -347,6 +545,7 @@ document.getElementById('filter').addEventListener('change', () => {
   // Load data from localStorage or use initial data
   const storedData = localStorage.getItem('animeList');
   window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
+  loadDataFromLocalStorage();
 
   renderAnimeList('long');
   renderAnimeList('short');
@@ -364,8 +563,11 @@ function filter() {
   const filterInputArray = filterInput.split(' ');
 
   if (filterInputArray.length !== 3) {
-    return window.animeList;
-  }
+    // search over anime name that matches with the filterInput partially or completely
+    const filteredList = window.animeList.filter(anime => anime.name.toLowerCase().includes(filterInput.toLowerCase()));
+    console.log(filterInput, filteredList.length);
+    return filteredList;
+  } 
 
   const property = filterInputArray[0];
   const sign = filterInputArray[1];
@@ -390,6 +592,7 @@ function filter() {
     }
   });
 
+  console.log(property, sign, value, filteredList.length);
   return filteredList;
 }
 
