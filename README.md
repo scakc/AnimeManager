@@ -1,7 +1,11 @@
 # AnimeManager
 A anime manager to add and keep track of animes/donghua/other forms of it that you are watching. You can add urls where you watch them, rate them and get them on top, keep track of number of episodes you have watched and add any other info you want to keep track of.
 
-### Steps
+### Steps Online
+1. Open https://scakc.github.io/AnimeManager/
+2. Follow steps from 3. in Local Steps below
+
+### Steps Local
 1. Clone the repo: git clone https://github.com/scakc/AnimeManager.git
 2. Open index.html in browser (chrome/edge)
 3. Click AddAnime
