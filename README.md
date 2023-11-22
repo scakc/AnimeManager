@@ -7,6 +7,8 @@ A anime manager to add and keep track of animes/donghua/other forms of it that y
 3. Click AddAnime
 4. Fill details in prompts like Name, Rating, No. Episodes Watched, Watching URL.
 5. Update the animes if needed as you want.
+   
+![Sample](res/image.png)
 
 ### Features
 1. In Filter tab
@@ -20,5 +22,3 @@ A anime manager to add and keep track of animes/donghua/other forms of it that y
 4. Save anime can be used to save the browser localStorage data to be stored in computer drive and Load button can be used to reload that file.
 5. Reset local simply resets the browser localStorage, so make sure u save before clicking this.
 6. When you update the anime rating, the list gets auto sorted to keep u interested in top animes.
-
-![Alt text](image.png)
