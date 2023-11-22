@@ -2,7 +2,7 @@
 // Function to save data to a file
 let animeList = [];
 window.animeList = animeList;
-window.animePropertyList = [];
+window.animePropertyList = ['name', 'episodesWatched', 'status', 'rating', 'link'];
 window.visibleProperties = ['rating', 'episodesWatched'];
 window.decimalProperties = {
   rating: 0.1,
@@ -29,12 +29,12 @@ function loadFromFile() {
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = '.json';
-  fileInput.addEventListener('change', function(event) {
+  fileInput.addEventListener('change', function (event) {
     const file = event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(event) {
+    reader.onload = function (event) {
       const contents = event.target.result;
       const data = JSON.parse(contents);
       window.animeList = data;
@@ -53,7 +53,7 @@ function resetLocalStorage() {
   localStorage.clear();
   const emptyStatus = isLocalStorageEmpty();
   console.log('Is localStorage empty?', emptyStatus); // Output: true or false
-  
+
   // refresh window
   window.location.reload();
 }
@@ -71,7 +71,7 @@ function isLocalStorageEmpty() {
 //     { name: 'Anime 3', episodesWatched: 3, status: 'inactive', rating: 2 },
 //     { name: 'Anime 4', episodesWatched: 3, status: 'long', rating: 5 },
 //   ];
-  
+
 // saveToFile(animeList); 
 
 // Function to render anime list based on status
@@ -79,9 +79,9 @@ function isLocalStorageEmpty() {
 //   const filteredList = window.animeList.filter(anime => anime.status === status);
 //   const listElement = document.getElementById(`${status}List`);
 //   listElement.innerHTML = '';
-  
+
 //   filteredList.sort((a, b) => b.rating - a.rating); // Sort by rating
-  
+
 //   filteredList.forEach(anime => {
 //     const listItem = document.createElement('li');
 //     listItem.textContent = `${anime.name} - Episodes watched: ${anime.episodesWatched} - Rating: ${anime.rating}`;
@@ -102,7 +102,7 @@ function updateEpisodes(animeName, increment) {
 // Function to add a new anime
 function addNewAnime() {
   const numAnimes = 1; //parseInt(prompt('Enter the number of animes you want to add:'));
-
+  // console.log(numAnimes);
   for (let i = 0; i < numAnimes; i++) {
     const newAnime = {};
 
@@ -110,7 +110,14 @@ function addNewAnime() {
 
     for (let j = 0; j < properties.length; j++) {
       const property = properties[j];
-      newAnime[property] = prompt(`Enter ${property}:`);
+
+      if (property === 'status') {
+        newAnime[property] = prompt(`Enter Section (long/short/inactive):`);
+      }
+      else {
+        newAnime[property] = prompt(`Enter ${property}:`);
+      }
+
     }
 
     window.animeList.push(newAnime);
@@ -130,7 +137,7 @@ function loadData() {
   renderAnimeList('short');
   renderAnimeList('inactive');
   console.log('Started Rendering data');
-  
+
   // Add a 1-second delay before refreshing the window
   setTimeout(() => {
     location.reload();
@@ -144,6 +151,13 @@ function saveData() {
   // Then update localStorage and re-render the lists
 }
 
+document.getElementById('addAnimeBtn').addEventListener('click', addNewAnime);
+document.getElementById('loadDataBtn').addEventListener('click', loadData);
+document.getElementById('saveDataBtn').addEventListener('click', saveData);
+document.getElementById('resetLocal').addEventListener('click', resetLocalStorage);
+// Event listener for add/del property button
+document.getElementById('addPropBtn').addEventListener('click', addProperty);
+document.getElementById('delPropBtn').addEventListener('click', delProperty);
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
   // Load data from localStorage or use initial data
@@ -156,14 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAnimeList('short');
   renderAnimeList('inactive');
 });
-
-document.getElementById('addAnimeBtn').addEventListener('click', addNewAnime);
-document.getElementById('loadDataBtn').addEventListener('click', loadData);
-document.getElementById('saveDataBtn').addEventListener('click', saveData);
-document.getElementById('resetLocal').addEventListener('click', resetLocalStorage);
-// Event listener for add/del property button
-document.getElementById('addPropBtn').addEventListener('click', addProperty);
-document.getElementById('delPropBtn').addEventListener('click', delProperty);
 
 // function to update localStorage
 function updateLocalStorage() {
@@ -206,7 +212,7 @@ function addProperty() {
   if (newPropertyType === 'number') {
     // Add to decimal properties
     const newPropertyStep = prompt('Enter new property step:');
-    window.decimalProperties[newProperty] = newPropertyStep; 
+    window.decimalProperties[newProperty] = newPropertyStep;
   }
 
   // Add a new checkbox to dropdown content
@@ -266,7 +272,7 @@ function delProperty() {
   renderAnimeList('inactive');
 }
 
-  // Function to render anime list based on status
+// Function to render anime list based on status
 function renderAnimeList(status) {
 
   loadDataFromLocalStorage();
@@ -278,11 +284,11 @@ function renderAnimeList(status) {
   if (window.animeList.length === 0) {
     return;
   }
-  
+
   window.animePropertyList = Object.keys(window.animeList[0]);
   const properties = window.animePropertyList;
   const invisibleProeprties = ["status", "link", "name"];
-  for (let i = 0; i < properties.length ; i++) {
+  for (let i = 0; i < properties.length; i++) {
 
     if (invisibleProeprties.includes(properties[i])) {
       continue;
@@ -359,7 +365,7 @@ function renderAnimeList(status) {
         propertyInput.setAttribute('type', 'number');
         propertyInput.setAttribute('step', `${decimalProperties[property]}`);
       }
-      else{
+      else {
         propertyInput.setAttribute('type', 'text');
       }
 
@@ -373,7 +379,7 @@ function renderAnimeList(status) {
       listItem.appendChild(propertySpan);
       propertyInput.addEventListener('blur', (event) => {
         let newProperty = event.target.value;
-        if (isDecimal){
+        if (isDecimal) {
           newProperty = parseFloat(event.target.value);
         }
         // console.log(property, newProperty);
@@ -404,7 +410,7 @@ function renderAnimeList(status) {
       renderAnimeList(anime.status);
     });
     listItem.appendChild(updateButton);
-    
+
     const deleteButton = document.createElement('button');
     deleteButton.classList.add('deleteBtn');
     deleteButton.textContent = 'Delete';
@@ -423,19 +429,19 @@ function renderAnimeList(status) {
     listItem.appendChild(deleteButton);
     listElement.appendChild(listItem);
   });
-  
+
   // Check if collpaseBtn is visible
   const firstAnimeItem = document.getElementsByClassName('anime-item')[0];
 
   if (firstAnimeItem === undefined) {
     return;
   }
-  
+
   const expandButton = document.createElement('button');
   expandButton.setAttribute('id', `${status}ExpandBtn`);
   expandButton.classList.add(`expandBtn`);
   // expandButton.textContent = '▼';
-  
+
   expandButton.style.width = firstAnimeItem.offsetWidth + 'px';
 
   // set width of class block same as above
@@ -444,30 +450,42 @@ function renderAnimeList(status) {
 
   // put text of button at center despite flex and float left
   const expandButtonText = document.createElement('i');
-  expandButtonText.classList.add('fas', 'fa-angle-double-down'); 
+  expandButtonText.classList.add('fas', 'fa-angle-double-down');
   // expandButtonText.textContent = '▼';
   expandButtonText.classList.add(`expandBtnSpan`);
   expandButton.appendChild(expandButtonText);
-  expandButtonText.style.marginLeft = parseInt(firstAnimeItem.offsetWidth/2) + 'px';
+  expandButtonText.style.marginLeft = parseInt(firstAnimeItem.offsetWidth / 2) + 'px';
   expandButtonText.style.marginTop = '20px';
 
   const section = document.getElementById(`${status}Section`);
   const collapseBtn = document.getElementsByClassName(`${status}CollapseBtn`);
-  if (section.style.maxHeight != 'none') {
-    expandButton.style.display = 'flex';
-    // hide collpase button
-    collapseBtn[0].style.display = 'none';
+  // change background of section to linear gradient if number of items in li status section is more than 2
+  const animeItemCount = listElement.childElementCount;
+  if (animeItemCount > 2) {
+
+    if (section.style.maxHeight != 'none') {
+      expandButton.style.display = 'flex';
+      // hide collpase button
+      collapseBtn[0].style.display = 'none';
+    } else {
+      // hide expand button
+      expandButton.style.display = 'none';
+      // show collpase button
+      collapseBtn[0].style.display = 'inline-block';
+    }
   } else {
-    // hide expand button
     expandButton.style.display = 'none';
-    // show collpase button
-    collapseBtn[0].style.display = 'inline-block';
+    collapseBtn[0].style.display = 'none';
+    section.style.maxHeight = 'none';
+    section.style.background = 'none';
+    section.classList.remove('masked');
   }
-  
+
   expandButton.addEventListener('click', () => {
-    
+
     const section = document.getElementById(`${status}Section`);
     section.style.maxHeight = section.style.maxHeight != 'none' ? 'none' : '300px';
+
     section.style.background = section.style.background != 'none' ? 'none' : 'linear-gradient(to top, #000, transparent);';
     section.classList.toggle('masked');
 
@@ -492,7 +510,7 @@ function renderAnimeList(status) {
   // set width of class block same as content 
   const blockDiv = document.getElementsByClassName('block');
   for (let i = 0; i < blockDiv.length; i++) {
-    blockDiv[i].style.width = firstAnimeItem.offsetWidth*1.05 + 'px';
+    blockDiv[i].style.width = firstAnimeItem.offsetWidth * 1.05 + 'px';
   }
 }
 
@@ -520,6 +538,7 @@ for (let i = 0; i < sections.length; i++) {
   button.addEventListener('click', () => {
     sectionElement.style.display = sectionElement.style.display === 'none' ? 'block' : 'none';
     button.innerText = button.innerText === 'Hide' ? 'Show' : 'Hide';
+    handleScroll();
   });
 }
 
@@ -527,7 +546,7 @@ for (let i = 0; i < sections.length; i++) {
 for (let i = 0; i < sections.length; i++) {
   const section = sections[i];
   const collapseBtn = document.getElementsByClassName(`${section}CollapseBtn`);
-  
+
   // add event listener for collapse buttons, on click hide the button and show expand button
   collapseBtn[0].addEventListener('click', () => {
     const sectionElement = document.getElementById(`${section}Section`);
@@ -549,8 +568,9 @@ document.getElementById('filter').addEventListener('change', () => {
 
   renderAnimeList('long');
   renderAnimeList('short');
-  renderAnimeList('inactive');}
-  );
+  renderAnimeList('inactive');
+}
+);
 
 // Function to filter anime list based on input given in filter element, input is of format property sign value, e.g. rating > 3.
 function filter() {
@@ -567,7 +587,7 @@ function filter() {
     const filteredList = window.animeList.filter(anime => anime.name.toLowerCase().includes(filterInput.toLowerCase()));
     console.log(filterInput, filteredList.length);
     return filteredList;
-  } 
+  }
 
   const property = filterInputArray[0];
   const sign = filterInputArray[1];
@@ -596,3 +616,35 @@ function filter() {
   return filteredList;
 }
 
+window.addEventListener('scroll', handleScroll);
+
+function handleScroll() {
+  var header = document.querySelector('header');
+  var stickySections = document.getElementsByClassName('stickysection');
+
+  var headerHeight = header.offsetHeight;
+
+  // for loop
+  for (let i = 0; i < stickySections.length; i++) {
+    const stickySection = stickySections[i];
+    stickySection.style.top = headerHeight + 15 + 'px';
+  }
+
+  // Fade any anime-item that scrolls above the header bottom
+  var headerBottom = header.offsetTop + header.offsetHeight;
+  var animeItems = document.getElementsByClassName('anime-item');
+  for (let i = 0; i < animeItems.length; i++) {
+    const animeItem = animeItems[i];
+
+    // compute distance of animeItem from screen top
+    const animeHeight = animeItem.getBoundingClientRect().y;
+
+    if (animeHeight < headerBottom + 45) {
+      // var delta = Math.abs(headerBottom + 50 - animeHeight);
+      animeItem.style.opacity = 0.1 //+ delta / 100;
+      animeItem.style.transition = 'opacity 0.1s ease-in-out';
+    } else {
+      animeItem.style.opacity = 1;
+    }
+  }
+}
