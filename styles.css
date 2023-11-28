@@ -49,6 +49,7 @@ h1 {
   /* top: auto; */
   /* background: #000; */
   z-index: 9;
+  margin: 2% 0 2% 0;
   /* Ensure the header is above other content */
 }
 
@@ -61,7 +62,7 @@ h2 {
 
 li {
   list-style-type: none;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
   padding: 2px;
   border: 1px solid #1b1b1b;
   /* Darker gray border */
@@ -73,6 +74,9 @@ li {
   width: auto;
   display: flex;
   float: left;
+  height: 2vw;
+  /* center text vertically */
+  align-items: center;
 }
 
 a {
@@ -168,6 +172,9 @@ input {
   border-radius: 5px;
   padding: 5px;
   text-align: center;
+  height: 100%;
+  font-size: 0.9vw;
+  min-width: 3vw;
 }
 
 .block {
@@ -340,4 +347,9 @@ span {
 .propertySpan {
   max-width: 150px;
   overflow-x: hidden;
+}
+
+.watched-checkbox{
+  min-width: 0.8vw;
+  width: 0.8vw;
 }

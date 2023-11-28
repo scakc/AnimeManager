@@ -8,6 +8,7 @@ window.decimalProperties = {
   rating: 0.1,
   episodesWatched: 1,
 };
+window.animeListState = {};
 
 function saveToFile(data) {
   const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
@@ -178,6 +179,7 @@ function updateLocalStorage() {
   localStorage.setItem('propertyList', JSON.stringify(window.animePropertyList)); // Update propertyList
   localStorage.setItem('visibleProperties', JSON.stringify(window.visibleProperties)); // Update visibleProperties
   localStorage.setItem('decimalProperties', JSON.stringify(window.decimalProperties)); // Update decimalProperties
+  localStorage.setItem('animeListState', JSON.stringify(window.animeListState)); // Update animeListState
 }
 
 // function to load data from localStorage
@@ -195,6 +197,8 @@ function loadDataFromLocalStorage() {
   window.visibleProperties = storedVisibleProperties ? JSON.parse(storedVisibleProperties) : window.visibleProperties;
   const storedDecimalProperties = localStorage.getItem('decimalProperties');
   window.decimalProperties = storedDecimalProperties ? JSON.parse(storedDecimalProperties) : window.decimalProperties;
+  const storedAnimeListState = localStorage.getItem('animeListState');
+  window.animeListState = storedAnimeListState ? JSON.parse(storedAnimeListState) : window.animeListState;
 }
 
 // Function to add a new property to animePropertyList
@@ -345,6 +349,54 @@ function renderAnimeList(status) {
     // animeNameSpan.textContent = `${anime.name} - Episodes watched: `;
     // listItem.appendChild(animeNameSpan);
 
+    // Add a watched/not watched checkbox with small size
+    const watchedCheckbox = document.createElement('input');
+    watchedCheckbox.setAttribute('type', 'checkbox');
+    watchedCheckbox.setAttribute('class', 'watched-checkbox');
+    watchedCheckbox.checked = window.animeListState[anime.name] !== undefined;
+    listItem.appendChild(watchedCheckbox);
+
+    // change background color to shades of gray with delta of time from last watched to current time
+    if (watchedCheckbox.checked) {
+      const currentTime = new Date();
+      const lastWatched = new Date(window.animeListState[anime.name].lastWatched);
+      const delta = Math.abs(currentTime - lastWatched) / 1000;
+      const days = Math.floor(delta / 86400);
+      const hours = Math.floor(delta / 3600) % 24;
+      const minutes = Math.floor(delta / 60) % 60;
+      const seconds = Math.floor(delta % 60);
+
+      // if days are greater than 2 then click 
+      if (days > 2) {
+        watchedCheckbox.click();
+      }
+      else {
+        // change opacity to shades of gray with delta of time from last watched to current time
+        const opacity = 1 - (days * 0.2 + hours * 0.1 + minutes * 0.05 + seconds * 0.01)*0.2;
+        listItem.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+        listItem.style.border = 'none';
+        console.log(anime.name, opacity);
+      }
+    }
+
+    // add event listener on click that updates the animeliststate with anime name as key
+    // and value as a dictionary with key as lastWatched and values as current time
+    watchedCheckbox.addEventListener('click', (event) => {
+      const animeName = anime.name;
+      const animeListState = window.animeListState;
+      const currentTime = new Date();
+      const lastWatched = currentTime.toLocaleString();
+
+      // if checked then update time else remove from animeListState
+      if (event.target.checked) {
+        window.animeListState[animeName] = { lastWatched: lastWatched };
+      } else {
+        delete window.animeListState[animeName];
+      }
+      updateLocalStorage();
+      renderAnimeList(anime.status);
+    });
+    
     // updating the link to item
     const link = document.createElement('a');
     link.setAttribute('href', anime.link);
