@@ -2,155 +2,36 @@
 // Function to save data to a file
 let animeList = [];
 window.animeList = animeList;
-window.animePropertyList = ['name', 'episodesWatched', 'status', 'rating', 'link'];
+window.animePropertyList = ['name', 'episodesWatched', 'status', 'rating', 'link', 'image'];
 window.visibleProperties = ['rating', 'episodesWatched'];
 window.decimalProperties = {
   rating: 0.1,
   episodesWatched: 1,
 };
 window.animeListState = {};
+window.sortBy = 'rating';
+window.options = {};
 
-function saveToFile(data) {
-  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-  const fileName = 'animeData.json';
-  const url = URL.createObjectURL(blob);
+const sections = ['long', 'short', 'inactive'];
 
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  // Load data from localStorage or use initial data
+  const storedData = localStorage.getItem('animeList');
+  window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
+  // change sortby radio button to rating
+  const options = localStorage.getItem('options');
+  
+  const sortBy = options ? JSON.parse(options).sortBy : 'rating';
+  document.getElementById(sortBy).checked = true;
 
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
+  const horviewstyle = options ? JSON.parse(options).horviewstyle : false;
+  document.getElementById('horviewstyle').checked = horviewstyle;
 
-// Function to load data from a file
-function loadFromFile() {
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = '.json';
-  fileInput.addEventListener('change', function (event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function (event) {
-      const contents = event.target.result;
-      const data = JSON.parse(contents);
-      window.animeList = data;
-      window.animePropertyList = Object.keys(window.animeList[0]);
-      localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
-      console.log('Is localStorage empty?', isLocalStorageEmpty()); // Output: true or false
-      console.log('Loaded data:', window.animeList);
-      loadDataFromLocalStorage();
-    };
-    reader.readAsText(file);
-  });
-  fileInput.click();
-}
-
-function resetLocalStorage() {
-  localStorage.clear();
-  const emptyStatus = isLocalStorageEmpty();
-  console.log('Is localStorage empty?', emptyStatus); // Output: true or false
-
-  // refresh window
-  window.location.reload();
-}
-
-// Function to check if localStorage is empty
-function isLocalStorageEmpty() {
-  return localStorage.length === 0;
-}
-
-// Save initial data to a file
-// Sample data (initial data or data retrieved from localStorage)
-// let animeList = [];
-//     { name: 'Anime 1', episodesWatched: 5, status: 'long', rating: 4 },
-//     { name: 'Anime 2', episodesWatched: 10, status: 'short', rating: 3 },
-//     { name: 'Anime 3', episodesWatched: 3, status: 'inactive', rating: 2 },
-//     { name: 'Anime 4', episodesWatched: 3, status: 'long', rating: 5 },
-//   ];
-
-// saveToFile(animeList); 
-
-// Function to render anime list based on status
-// function renderAnimeList(status) {
-//   const filteredList = window.animeList.filter(anime => anime.status === status);
-//   const listElement = document.getElementById(`${status}List`);
-//   listElement.innerHTML = '';
-
-//   filteredList.sort((a, b) => b.rating - a.rating); // Sort by rating
-
-//   filteredList.forEach(anime => {
-//     const listItem = document.createElement('li');
-//     listItem.textContent = `${anime.name} - Episodes watched: ${anime.episodesWatched} - Rating: ${anime.rating}`;
-//     listElement.appendChild(listItem);
-//   });
-// }
-
-// Function to update episodes watched
-function updateEpisodes(animeName, increment) {
-  const anime = window.animeList.find(anime => anime.name === animeName);
-  if (anime) {
-    anime.episodesWatched += increment;
-    localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
-    renderAnimeList(anime.status);
-  }
-}
-
-// Function to add a new anime
-function addNewAnime() {
-  const numAnimes = 1; //parseInt(prompt('Enter the number of animes you want to add:'));
-  // console.log(numAnimes);
-  for (let i = 0; i < numAnimes; i++) {
-    const newAnime = {};
-
-    const properties = window.animePropertyList;
-
-    for (let j = 0; j < properties.length; j++) {
-      const property = properties[j];
-
-      if (property === 'status') {
-        newAnime[property] = prompt(`Enter Section (long/short/inactive):`);
-      }
-      else {
-        newAnime[property] = prompt(`Enter ${property}:`);
-      }
-
-    }
-
-    window.animeList.push(newAnime);
-  }
-
-  localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
-
-  renderAnimeList('long');
-  renderAnimeList('short');
-  renderAnimeList('inactive');
-}
-
-// Function to load animes
-function loadData() {
-  loadFromFile();
-  renderAnimeList('long');
-  renderAnimeList('short');
-  renderAnimeList('inactive');
-  console.log('Started Rendering data');
-
-  // Add a 1-second delay before refreshing the window
-  setTimeout(() => {
-    location.reload();
-  }, 3000);
-}
-
-// Function to save animes
-function saveData() {
-  saveToFile(window.animeList);
-  // Logic to add a new anime to animeList
-  // Then update localStorage and re-render the lists
-}
+  loadDataFromLocalStorage();
+  // window.animePropertyList = Object.keys(window.animeList[0]);
+  renderAllSections();
+});
 
 document.getElementById('addAnimeBtn').addEventListener('click', addNewAnime);
 document.getElementById('loadDataBtn').addEventListener('click', loadData);
@@ -159,121 +40,48 @@ document.getElementById('resetLocal').addEventListener('click', resetLocalStorag
 // Event listener for add/del property button
 document.getElementById('addPropBtn').addEventListener('click', addProperty);
 document.getElementById('delPropBtn').addEventListener('click', delProperty);
-// Event listeners
-document.addEventListener('DOMContentLoaded', () => {
+// Event listener for options buttons
+document.getElementById('hideRecent').addEventListener('click', () => {
+  const hideRecent = document.getElementById('hideRecent').checked;
+  window.options.hideRecent = hideRecent;
+  updateLocalStorage();
+  renderAllSections();
+});
+// Add an event listener to the radio buttons to store the selected value in the session storage when a radio button is selected
+document.querySelectorAll('input[name="sortBy"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        changeSortBy(this.value);
+    });
+});
+
+document.getElementById('horviewstyle').addEventListener('change', () => {
+  const horviewstyle = document.getElementById('horviewstyle').checked;
+  window.options.horviewstyle = horviewstyle;
+  updateLocalStorage();
+  renderAllSections();
+  window.location.reload();
+});
+
+// Add on change listener for element id filter to call function filter
+document.getElementById('filter').addEventListener('change', () => {
   // Load data from localStorage or use initial data
   const storedData = localStorage.getItem('animeList');
   window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
   loadDataFromLocalStorage();
-  // window.animePropertyList = Object.keys(window.animeList[0]);
 
-  renderAnimeList('long');
-  renderAnimeList('short');
-  renderAnimeList('inactive');
-});
-
-// function to update localStorage
-function updateLocalStorage() {
-  // Update localStorage
-  localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update animeList
-  localStorage.setItem('propertyList', JSON.stringify(window.animePropertyList)); // Update propertyList
-  localStorage.setItem('visibleProperties', JSON.stringify(window.visibleProperties)); // Update visibleProperties
-  localStorage.setItem('decimalProperties', JSON.stringify(window.decimalProperties)); // Update decimalProperties
-  localStorage.setItem('animeListState', JSON.stringify(window.animeListState)); // Update animeListState
+  renderAllSections();
 }
+);
 
-// function to load data from localStorage
-function loadDataFromLocalStorage() {
-  // Load data from localStorage or use initial data
-  const storedData = localStorage.getItem('animeList');
-  window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
+window.addEventListener('scroll', handleScroll);
 
-  if (window.animeList.length === 0) {
-    return;
+// Function to render all sections
+function renderAllSections() {
+  // render anime list based on status of anime from list of statuses 
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    renderAnimeList(section);
   }
-
-  window.animePropertyList = Object.keys(window.animeList[0]);
-  const storedVisibleProperties = localStorage.getItem('visibleProperties');
-  window.visibleProperties = storedVisibleProperties ? JSON.parse(storedVisibleProperties) : window.visibleProperties;
-  const storedDecimalProperties = localStorage.getItem('decimalProperties');
-  window.decimalProperties = storedDecimalProperties ? JSON.parse(storedDecimalProperties) : window.decimalProperties;
-  const storedAnimeListState = localStorage.getItem('animeListState');
-  window.animeListState = storedAnimeListState ? JSON.parse(storedAnimeListState) : window.animeListState;
-}
-
-// Function to add a new property to animePropertyList
-function addProperty() {
-  // Add a new property to animePropertyList
-  const newProperty = prompt('Enter new property:');
-  const newPropertyType = prompt('Enter new property type:');
-
-  if (newProperty === null || newProperty === '' || newProperty === undefined || window.animePropertyList.includes(newProperty)) {
-    return;
-  }
-
-  window.animePropertyList.push(newProperty);
-
-  if (newPropertyType === 'number') {
-    // Add to decimal properties
-    const newPropertyStep = prompt('Enter new property step:');
-    window.decimalProperties[newProperty] = newPropertyStep;
-  }
-
-  // Add a new checkbox to dropdown content
-  const dropdownContent = document.querySelector('.dropdown-content');
-  const checkboxLabel = document.createElement('label');
-  const checkbox = document.createElement('input');
-  checkbox.setAttribute('type', 'checkbox');
-  checkbox.setAttribute('value', `${newProperty}`);
-  checkboxLabel.appendChild(checkbox);
-  checkboxLabel.appendChild(document.createTextNode(` ${newProperty}`));
-  dropdownContent.appendChild(checkboxLabel);
-
-  // Add the new property to each anime
-  const animeList = window.animeList;
-  for (let i = 0; i < animeList.length; i++) {
-    animeList[i][newProperty] = null;
-  }
-
-  updateLocalStorage();
-  renderAnimeList('long');
-  renderAnimeList('short');
-  renderAnimeList('inactive');
-}
-
-// Function to delete a property from animePropertyList
-function delProperty() {
-  // Add a new property to animePropertyList
-  const newProperty = prompt('Enter Del property:');
-
-  if (newProperty === null || newProperty === '' || newProperty === undefined || !window.animePropertyList.includes(newProperty)) {
-    return;
-  }
-
-  // Remove the property from animePropertyList
-  const index = window.animePropertyList.indexOf(newProperty);
-  if (index !== -1) {
-    window.animePropertyList.splice(index, 1);
-  }
-
-  // Remove from visible properties and decimal properties
-  const visiblePropertiesIndex = window.visibleProperties.indexOf(newProperty);
-  if (visiblePropertiesIndex !== -1) {
-    window.visibleProperties.splice(visiblePropertiesIndex, 1);
-  }
-  delete window.decimalProperties[newProperty];
-
-  // Remove the property from each anime
-  const animeList = window.animeList;
-  for (let i = 0; i < animeList.length; i++) {
-    delete animeList[i][newProperty];
-  }
-
-  // Update localStorage
-  updateLocalStorage();
-  renderAnimeList('long');
-  renderAnimeList('short');
-  renderAnimeList('inactive');
 }
 
 // Function to render anime list based on status
@@ -290,11 +98,30 @@ function renderAnimeList(status) {
   }
 
   window.animePropertyList = Object.keys(window.animeList[0]);
+  // console.log("apl", animePropertyList)
+
+  // properties 
   const properties = window.animePropertyList;
-  const invisibleProeprties = ["status", "link", "name"];
+  const invisibleProeprties = ["status", "link", "name", "image"];
+  
   for (let i = 0; i < properties.length; i++) {
 
     if (invisibleProeprties.includes(properties[i])) {
+      continue;
+    }
+
+    
+    // if horizontal view is selected then continue on all properties except episodesWatched and rating
+    // console.log("horviewstyle cp", properties[i]);
+    if (window.options.horviewstyle && properties[i] !== 'episodesWatched' && properties[i] !== 'rating') {
+      // of visible properties does not contain the property then remove from visible properties
+      if (window.visibleProperties.includes(properties[i])) {
+        const index = window.visibleProperties.indexOf(properties[i]);
+        if (index !== -1) {
+          window.visibleProperties.splice(index, 1);
+        }
+      }
+
       continue;
     }
 
@@ -329,9 +156,7 @@ function renderAnimeList(status) {
       localStorage.setItem('decimalProperties', JSON.stringify(window.decimalProperties)); // Update decimalProperties
       localStorage.setItem('propertyList', JSON.stringify(window.animePropertyList)); // Update propertyList
 
-      renderAnimeList("long");
-      renderAnimeList("short");
-      renderAnimeList("inactive");
+      renderAllSections();
     });
   }
 
@@ -340,7 +165,14 @@ function renderAnimeList(status) {
   const listElement = document.getElementById(`${status}List`);
   listElement.innerHTML = '';
 
-  filteredList.sort((a, b) => b.rating - a.rating); // Sort by rating
+  // check sortBy property and sort the list accordingly
+  console.log("sortBy rating", window.sortBy, window.sortBy === 'rating')
+  if (window.sortBy === 'rating') {
+    filteredList.sort((a, b) => b.rating - a.rating); // Sort by rating
+  } else {
+    const matchedProperty = window.sortBy;
+    filteredList.sort((a, b) => b[matchedProperty] - a[matchedProperty]); // Sort by rating
+  }
 
   filteredList.forEach(anime => {
     const listItem = document.createElement('li');
@@ -358,6 +190,7 @@ function renderAnimeList(status) {
 
     // change background color to shades of gray with delta of time from last watched to current time
     if (watchedCheckbox.checked) {
+
       const currentTime = new Date();
       const lastWatched = new Date(window.animeListState[anime.name].lastWatched);
       const delta = Math.abs(currentTime - lastWatched) / 1000;
@@ -377,6 +210,14 @@ function renderAnimeList(status) {
         listItem.style.border = 'none';
         console.log(anime.name, opacity);
       }
+
+      // if horizontal view then make opacity 0.7
+      if (window.options.horviewstyle && days <= 2) {
+        listItem.style.opacity = 0.6;
+      }
+    }
+    else{
+      listElement.style.opacity = 1;
     }
 
     // add event listener on click that updates the animeliststate with anime name as key
@@ -404,6 +245,10 @@ function renderAnimeList(status) {
     link.textContent = anime.name;
     // link.style.width = '20px'; // Set the width to 200 pixels
     listItem.appendChild(link);
+    const hideRecent = document.getElementById('hideRecent');
+
+    // save hideRecent checkbox state to window.options
+    window.options.hideRecent = hideRecent.checked;
 
     // add visible properties to list item
     for (let i = 0; i < window.visibleProperties.length; i++) {
@@ -436,6 +281,11 @@ function renderAnimeList(status) {
         }
         // console.log(property, newProperty);
         updateProperty(anime.name, property, newProperty);
+
+        // if property is episodes watched then trigger the checkbox click event
+        if (property === 'episodesWatched') {
+          watchedCheckbox.click();
+        }
       });
       listItem.appendChild(propertyInput);
     }
@@ -446,17 +296,16 @@ function renderAnimeList(status) {
     updateButton.textContent = 'Update';
     updateButton.addEventListener('click', () => {
       // Update all properties at once
-      const newName = prompt('Enter new name:', anime.name);
-      const newEpisodesWatched = parseInt(prompt('Enter new episodes watched:', anime.episodesWatched));
-      const newStatus = prompt('Enter new status:', anime.status);
-      const newRating = parseFloat(prompt('Enter new rating:', anime.rating));
-      const newLink = prompt('Enter new link:', anime.link);
-
-      anime.name = newName;
-      anime.episodesWatched = newEpisodesWatched;
-      anime.status = newStatus;
-      anime.rating = newRating;
-      anime.link = newLink;
+      // Iterate 
+      for (let i = 0; i < window.animePropertyList.length; i++) {
+        const property = window.animePropertyList[i];
+        const propertyInput = prompt(`Enter new ${property}:`, anime[property]);
+        let newProperty = propertyInput;
+        if (window.decimalProperties[property] !== undefined) {
+          newProperty = parseFloat(newProperty);
+        }
+        updateProperty(anime.name, property, newProperty);
+      }
 
       localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
       renderAnimeList(anime.status);
@@ -479,8 +328,42 @@ function renderAnimeList(status) {
       }
     });
     listItem.appendChild(deleteButton);
-    listElement.appendChild(listItem);
+
+    // if horizontal view is selected and anime has image link then add image as background
+    if (window.options.horviewstyle && anime.image !== undefined) {
+      listItem.style.backgroundImage = `url(${anime.image})`;
+      listItem.style.backgroundSize = 'cover';
+      listItem.style.backgroundPosition = 'center';
+      listItem.style.backgroundRepeat = 'no-repeat';
+    }
+
+    // if the checkbox of id hideRecent is checked then do not show the anime in the list
+    if (watchedCheckbox.checked && hideRecent.checked) {
+      ;
+    }
+    else {
+      listElement.appendChild(listItem);
+    }
+    
   });
+
+  // style change
+  if (window.options.horviewstyle) {
+    const listElementParent = listElement.parentElement;
+    listElement.style.display = 'inline-flex';
+    // listElement.style.flexWrap = 'wrap';
+    listElement.style.justifyContent = 'space-between';
+    // listElementParent.style.overflow = 'hidden';
+    listElementParent.style.overflowX = 'scroll';
+    
+    // make the scroll bar invisible
+    listElementParent.style.scrollbarWidth = 'none';
+
+    // iterate over each child element and set width to 30% of screen width
+    for (let i = 0; i < listElement.childElementCount; i++) {
+      listElement.children[i].classList.add('horview');
+    }
+  }
 
   // Check if collpaseBtn is visible
   const firstAnimeItem = document.getElementsByClassName('anime-item')[0];
@@ -566,6 +449,248 @@ function renderAnimeList(status) {
   }
 }
 
+function saveToFile(data) {
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const fileName = 'animeData.json';
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// Function to load data from a file
+function loadFromFile() {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.json';
+  fileInput.addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const contents = event.target.result;
+      const data = JSON.parse(contents);
+      window.animeList = data;
+      window.animePropertyList = Object.keys(window.animeList[0]);
+      localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
+      console.log('Is localStorage empty?', isLocalStorageEmpty()); // Output: true or false
+      console.log('Loaded data:', window.animeList);
+      loadDataFromLocalStorage();
+    };
+    reader.readAsText(file);
+  });
+  fileInput.click();
+}
+
+function resetLocalStorage() {
+  localStorage.clear();
+  const emptyStatus = isLocalStorageEmpty();
+  console.log('Is localStorage empty?', emptyStatus); // Output: true or false
+
+  // refresh window
+  window.location.reload();
+}
+
+// Function to check if localStorage is empty
+function isLocalStorageEmpty() {
+  return localStorage.length === 0;
+}
+
+// Function to update episodes watched
+function updateEpisodes(animeName, increment) {
+  const anime = window.animeList.find(anime => anime.name === animeName);
+  if (anime) {
+    anime.episodesWatched += increment;
+    localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
+    renderAnimeList(anime.status);
+  }
+}
+
+// Function to add a new anime
+function addNewAnime() {
+  const numAnimes = 1; //parseInt(prompt('Enter the number of animes you want to add:'));
+  // console.log(numAnimes);
+  for (let i = 0; i < numAnimes; i++) {
+    const newAnime = {};
+
+    const properties = window.animePropertyList;
+
+    for (let j = 0; j < properties.length; j++) {
+      const property = properties[j];
+
+      if (property === 'status') {
+        newAnime[property] = prompt(`Enter Section (long/short/inactive/other):`);
+      }
+      else {
+        newAnime[property] = prompt(`Enter ${property}:`);
+      }
+
+    }
+
+    window.animeList.push(newAnime);
+  }
+
+  localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
+  renderAllSections();
+}
+
+// Function to load animes
+function loadData() {
+  loadFromFile();
+  renderAllSections();
+  console.log('Started Rendering data');
+
+  // Add a 1-second delay before refreshing the window
+  setTimeout(() => {
+    location.reload();
+  }, 3000);
+}
+
+// Function to save animes
+function saveData() {
+
+  // If animelist contains null values for any property then remove that anime from animeList
+  const animeList = window.animeList;
+  for (let i = 0; i < animeList.length; i++) {
+    const anime = animeList[i];
+    const properties = Object.keys(anime);
+    for (let j = 0; j < properties.length; j++) {
+      const property = properties[j];
+      if (anime[property] === null) {
+        animeList.splice(i, 1);
+        i--;
+        break;
+      }
+    }
+  }
+
+  saveToFile(animeList);
+  // Logic to add a new anime to animeList
+  // Then update localStorage and re-render the lists
+}
+
+function changeSortBy(value) {
+  const sortBy = value;
+  window.sortBy = sortBy;
+  window.options.sortBy = sortBy;
+  updateLocalStorage();
+  renderAllSections();
+}
+
+// function to update localStorage
+function updateLocalStorage() {
+  // Update localStorage
+  localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update animeList
+  localStorage.setItem('propertyList', JSON.stringify(window.animePropertyList)); // Update propertyList
+  localStorage.setItem('visibleProperties', JSON.stringify(window.visibleProperties)); // Update visibleProperties
+  localStorage.setItem('decimalProperties', JSON.stringify(window.decimalProperties)); // Update decimalProperties
+  localStorage.setItem('animeListState', JSON.stringify(window.animeListState)); // Update animeListState
+  localStorage.setItem('options', JSON.stringify(window.options)); // Update options
+  console.log("working", window.options);
+}
+
+// function to load data from localStorage
+function loadDataFromLocalStorage() {
+  // Load data from localStorage or use initial data
+  const storedData = localStorage.getItem('animeList');
+  window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
+
+  if (window.animeList.length === 0) {
+    return;
+  }
+
+  window.animePropertyList = Object.keys(window.animeList[0]);
+  const storedVisibleProperties = localStorage.getItem('visibleProperties');
+  window.visibleProperties = storedVisibleProperties ? JSON.parse(storedVisibleProperties) : window.visibleProperties;
+  const storedDecimalProperties = localStorage.getItem('decimalProperties');
+  window.decimalProperties = storedDecimalProperties ? JSON.parse(storedDecimalProperties) : window.decimalProperties;
+  const storedAnimeListState = localStorage.getItem('animeListState');
+  window.animeListState = storedAnimeListState ? JSON.parse(storedAnimeListState) : window.animeListState;
+  const storedOptions = localStorage.getItem('options');
+  window.options = storedOptions ? JSON.parse(storedOptions) : window.options;
+  window.sortBy = window.options.sortBy;
+  const hideRecent = document.getElementById('hideRecent');
+  hideRecent.checked = window.options.hideRecent;
+}
+
+// Function to add a new property to animePropertyList
+function addProperty() {
+  // Add a new property to animePropertyList
+  const newProperty = prompt('Enter new property:');
+  const newPropertyType = prompt('Enter new property type:');
+
+  if (newProperty === null || newProperty === '' || newProperty === undefined || window.animePropertyList.includes(newProperty)) {
+    return;
+  }
+
+  window.animePropertyList.push(newProperty);
+
+  if (newPropertyType === 'number') {
+    // Add to decimal properties
+    const newPropertyStep = prompt('Enter new property step:');
+    window.decimalProperties[newProperty] = newPropertyStep;
+  }
+
+  // Add a new checkbox to dropdown content
+  const dropdownContent = document.querySelector('.dropdown-content');
+  const checkboxLabel = document.createElement('label');
+  const checkbox = document.createElement('input');
+  checkbox.setAttribute('type', 'checkbox');
+  checkbox.setAttribute('value', `${newProperty}`);
+  checkboxLabel.appendChild(checkbox);
+  checkboxLabel.appendChild(document.createTextNode(` ${newProperty}`));
+  dropdownContent.appendChild(checkboxLabel);
+
+  // Add the new property to each anime
+  const animeList = window.animeList;
+  for (let i = 0; i < animeList.length; i++) {
+    animeList[i][newProperty] = null;
+  }
+
+  updateLocalStorage();
+  renderAllSections();
+}
+
+// Function to delete a property from animePropertyList
+function delProperty() {
+  // Add a new property to animePropertyList
+  const newProperty = prompt('Enter Del property:');
+
+  if (newProperty === null || newProperty === '' || newProperty === undefined || !window.animePropertyList.includes(newProperty)) {
+    return;
+  }
+
+  // Remove the property from animePropertyList
+  const index = window.animePropertyList.indexOf(newProperty);
+  if (index !== -1) {
+    window.animePropertyList.splice(index, 1);
+  }
+
+  // Remove from visible properties and decimal properties
+  const visiblePropertiesIndex = window.visibleProperties.indexOf(newProperty);
+  if (visiblePropertiesIndex !== -1) {
+    window.visibleProperties.splice(visiblePropertiesIndex, 1);
+  }
+  delete window.decimalProperties[newProperty];
+
+  // Remove the property from each anime
+  const animeList = window.animeList;
+  for (let i = 0; i < animeList.length; i++) {
+    delete animeList[i][newProperty];
+  }
+
+  // Update localStorage
+  updateLocalStorage();
+  renderAllSections();
+}
+
 // Function to update the anime rating or episodes watched
 function updateProperty(animeName, property, value) {
   const anime = window.animeList.find(anime => anime.name === animeName);
@@ -579,8 +704,6 @@ function updateProperty(animeName, property, value) {
 // Usage example:
 // updateProperty('Anime 1', 'rating', 5); // Update anime rating
 // updateProperty('Anime 2', 'episodesWatched', 15); // Update episodes watched
-
-const sections = ['long', 'short', 'inactive'];
 
 for (let i = 0; i < sections.length; i++) {
   const section = sections[i];
@@ -610,19 +733,6 @@ for (let i = 0; i < sections.length; i++) {
     expandBtn.style.display = 'flex';
   });
 }
-
-// Add on change listener for element id filter to call function filter
-document.getElementById('filter').addEventListener('change', () => {
-  // Load data from localStorage or use initial data
-  const storedData = localStorage.getItem('animeList');
-  window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
-  loadDataFromLocalStorage();
-
-  renderAnimeList('long');
-  renderAnimeList('short');
-  renderAnimeList('inactive');
-}
-);
 
 // Function to filter anime list based on input given in filter element, input is of format property sign value, e.g. rating > 3.
 function filter() {
@@ -667,8 +777,6 @@ function filter() {
   console.log(property, sign, value, filteredList.length);
   return filteredList;
 }
-
-window.addEventListener('scroll', handleScroll);
 
 function handleScroll() {
   var header = document.querySelector('header');

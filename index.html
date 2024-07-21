@@ -26,7 +26,32 @@
       <!-- button to add new properties to dropdown -->
       <div class="addPropBtnDiv"><button id="addPropBtn">Add Property</button></div>
     </div>
+    
     <button id="delPropBtn"> Delete Property </button>
+    <!-- option to hide recently watched animes -->
+    <div class="dropdown">
+      <button class="dropbtn">&nbsp;&nbsp; Options &nbsp; &nbsp; </button>
+      <div class="dropdown-content">
+        <!-- Add more checkboxes as needed -->
+        <input type="checkbox" id="hideRecent" name="hideRecent" value="hideRecent">
+        <label for="hideRecent">Hide Recently Watched</label>
+        </br>
+        <input type="checkbox" id="horviewstyle" name="horviewstyle" value="horviewstyle">
+        <label for="horviewstyle">Horizontal View</label>
+        
+        <div class="dropdown2">
+          <span class="dropspan">&nbsp;&nbsp; SortBy &nbsp; &nbsp; </span>
+          <div class="dropdown-content2" id = "sortBy">
+            <!-- Add more checkboxes as needed -->
+            <input type="radio" id="rating" name="sortBy" value="rating" checked>
+            <label for="sortRating">Sort By Rating</label>
+          </br>
+            <input type="radio" id="lucifer" name="sortBy" value="lucifer">
+            <label for="sortLucifer">Sort By Lucifer</label>
+          </div>
+        </div>
+      </div>
+    </div>
   </header>
   <main>
     <div class="block">
