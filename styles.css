@@ -458,3 +458,60 @@ span {
 .horview span{
   display: none;
 }
+
+.updateAnimeForm{
+  display: none;
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.8);
+  /* Slightly lighter gray background */
+  color: #f0f0f0;
+  /* Light gray text */
+  border: 1px solid #1b1b1b;
+  /* Darker gray border */
+  border-radius: 5px;
+  padding: 5px;
+  text-align: center;
+  font-size: 0.9vw;
+  min-width: 3vw;
+  width: 50%;
+  top: 10%;
+  z-index: 1000;
+  left: 25%;
+  float: left;
+}
+
+.propertyLabelFormUpdate{
+  display: inline-flex;
+  width: 25%;
+  /* text-align: top; */
+  padding: 1vh 0 1vh 0;
+  margin: 1vh 0 1vh 0;
+  left: 0;
+}
+
+/* text content of .propertyLabelFormUpdate */
+.propertyInputFormUpdate{
+  display: inline-flex;
+  width: 70%;
+  text-align: center;
+  padding: 1vh 0 1vh 0;
+  margin: 1vh 0 1vh 0;
+}
+
+.propertyInputFormUpdate{
+  display: inline-flex;
+  width: 70%;
+  text-align: center;
+  padding: 1vh 0 1vh 0;
+  margin: 1vh 0 1vh 0;
+}
+
+.fadeBackground{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}

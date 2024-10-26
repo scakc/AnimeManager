@@ -1,6 +1,7 @@
 // JavaScript for handling interactions and data management
 // Function to save data to a file
 let animeList = [];
+let iframedata = null;
 window.animeList = animeList;
 window.animePropertyList = ['name', 'episodesWatched', 'status', 'rating', 'link', 'image'];
 window.visibleProperties = ['rating', 'episodesWatched'];
@@ -14,7 +15,9 @@ window.options = {};
 
 const sections = ['long', 'short', 'inactive'];
 
-// Event listeners
+// #############################################
+// ############## Event listeners ##############
+// #############################################
 document.addEventListener('DOMContentLoaded', () => {
   // Load data from localStorage or use initial data
   const storedData = localStorage.getItem('animeList');
@@ -32,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // window.animePropertyList = Object.keys(window.animeList[0]);
   renderAllSections();
 });
-
+// Click event listener for add anime button
 document.getElementById('addAnimeBtn').addEventListener('click', addNewAnime);
 document.getElementById('loadDataBtn').addEventListener('click', loadData);
 document.getElementById('saveDataBtn').addEventListener('click', saveData);
@@ -53,7 +56,6 @@ document.querySelectorAll('input[name="sortBy"]').forEach(function(radio) {
         changeSortBy(this.value);
     });
 });
-
 document.getElementById('horviewstyle').addEventListener('change', () => {
   const horviewstyle = document.getElementById('horviewstyle').checked;
   window.options.horviewstyle = horviewstyle;
@@ -61,7 +63,6 @@ document.getElementById('horviewstyle').addEventListener('change', () => {
   renderAllSections();
   window.location.reload();
 });
-
 // Add on change listener for element id filter to call function filter
 document.getElementById('filter').addEventListener('change', () => {
   // Load data from localStorage or use initial data
@@ -72,9 +73,39 @@ document.getElementById('filter').addEventListener('change', () => {
   renderAllSections();
 }
 );
-
 window.addEventListener('scroll', handleScroll);
+// add event listeners for show/hide buttons in for loop
+for (let i = 0; i < sections.length; i++) {
+  const section = sections[i];
+  const button = document.getElementById(`${section}Button`);
+  const sectionElement = document.getElementById(`${section}Section`);
 
+  button.addEventListener('click', () => {
+    sectionElement.style.display = sectionElement.style.display === 'none' ? 'block' : 'none';
+    button.innerText = button.innerText === 'Hide' ? 'Show' : 'Hide';
+    handleScroll();
+  });
+}
+// add event listeners for collapse buttons in for loop
+for (let i = 0; i < sections.length; i++) {
+  const section = sections[i];
+  const collapseBtn = document.getElementsByClassName(`${section}CollapseBtn`);
+
+  // add event listener for collapse buttons, on click hide the button and show expand button
+  collapseBtn[0].addEventListener('click', () => {
+    const sectionElement = document.getElementById(`${section}Section`);
+    sectionElement.style.maxHeight = '300px';
+    sectionElement.style.background = 'linear-gradient(to top, #000, transparent)';
+    sectionElement.classList.toggle('masked');
+    collapseBtn[0].style.display = 'none';
+    const expandBtn = document.getElementById(`${section}ExpandBtn`);
+    expandBtn.style.display = 'flex';
+  });
+}
+
+// ####################################
+// ############# FUNCTION #############
+// ####################################
 // Function to render all sections
 function renderAllSections() {
   // render anime list based on status of anime from list of statuses 
@@ -83,7 +114,6 @@ function renderAllSections() {
     renderAnimeList(section);
   }
 }
-
 // Function to render anime list based on status
 function renderAnimeList(status) {
 
@@ -296,19 +326,8 @@ function renderAnimeList(status) {
     updateButton.textContent = 'Update';
     updateButton.addEventListener('click', () => {
       // Update all properties at once
-      // Iterate 
-      for (let i = 0; i < window.animePropertyList.length; i++) {
-        const property = window.animePropertyList[i];
-        const propertyInput = prompt(`Enter new ${property}:`, anime[property]);
-        let newProperty = propertyInput;
-        if (window.decimalProperties[property] !== undefined) {
-          newProperty = parseFloat(newProperty);
-        }
-        updateProperty(anime.name, property, newProperty);
-      }
-
-      localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
-      renderAnimeList(anime.status);
+      // call update function
+      updateAnimeForm(anime.name);
     });
     listItem.appendChild(updateButton);
 
@@ -448,7 +467,7 @@ function renderAnimeList(status) {
     blockDiv[i].style.width = firstAnimeItem.offsetWidth * 1.05 + 'px';
   }
 }
-
+// Function to save anime list
 function saveToFile(data) {
   const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
   const fileName = 'animeData.json';
@@ -463,7 +482,6 @@ function saveToFile(data) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
-
 // Function to load data from a file
 function loadFromFile() {
   const fileInput = document.createElement('input');
@@ -488,7 +506,7 @@ function loadFromFile() {
   });
   fileInput.click();
 }
-
+// reset local storage
 function resetLocalStorage() {
   localStorage.clear();
   const emptyStatus = isLocalStorageEmpty();
@@ -497,12 +515,10 @@ function resetLocalStorage() {
   // refresh window
   window.location.reload();
 }
-
 // Function to check if localStorage is empty
 function isLocalStorageEmpty() {
   return localStorage.length === 0;
 }
-
 // Function to update episodes watched
 function updateEpisodes(animeName, increment) {
   const anime = window.animeList.find(anime => anime.name === animeName);
@@ -512,9 +528,11 @@ function updateEpisodes(animeName, increment) {
     renderAnimeList(anime.status);
   }
 }
-
 // Function to add a new anime
 function addNewAnime() {
+
+  return updateAnimeForm();
+
   const numAnimes = 1; //parseInt(prompt('Enter the number of animes you want to add:'));
   // console.log(numAnimes);
   for (let i = 0; i < numAnimes; i++) {
@@ -540,7 +558,6 @@ function addNewAnime() {
   localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
   renderAllSections();
 }
-
 // Function to load animes
 function loadData() {
   loadFromFile();
@@ -552,7 +569,6 @@ function loadData() {
     location.reload();
   }, 3000);
 }
-
 // Function to save animes
 function saveData() {
 
@@ -575,7 +591,7 @@ function saveData() {
   // Logic to add a new anime to animeList
   // Then update localStorage and re-render the lists
 }
-
+// Function to change sortBy property
 function changeSortBy(value) {
   const sortBy = value;
   window.sortBy = sortBy;
@@ -583,7 +599,6 @@ function changeSortBy(value) {
   updateLocalStorage();
   renderAllSections();
 }
-
 // function to update localStorage
 function updateLocalStorage() {
   // Update localStorage
@@ -595,7 +610,6 @@ function updateLocalStorage() {
   localStorage.setItem('options', JSON.stringify(window.options)); // Update options
   console.log("working", window.options);
 }
-
 // function to load data from localStorage
 function loadDataFromLocalStorage() {
   // Load data from localStorage or use initial data
@@ -619,7 +633,6 @@ function loadDataFromLocalStorage() {
   const hideRecent = document.getElementById('hideRecent');
   hideRecent.checked = window.options.hideRecent;
 }
-
 // Function to add a new property to animePropertyList
 function addProperty() {
   // Add a new property to animePropertyList
@@ -657,7 +670,6 @@ function addProperty() {
   updateLocalStorage();
   renderAllSections();
 }
-
 // Function to delete a property from animePropertyList
 function delProperty() {
   // Add a new property to animePropertyList
@@ -690,7 +702,6 @@ function delProperty() {
   updateLocalStorage();
   renderAllSections();
 }
-
 // Function to update the anime rating or episodes watched
 function updateProperty(animeName, property, value) {
   const anime = window.animeList.find(anime => anime.name === animeName);
@@ -700,40 +711,9 @@ function updateProperty(animeName, property, value) {
     renderAnimeList(anime.status);
   }
 }
-
 // Usage example:
 // updateProperty('Anime 1', 'rating', 5); // Update anime rating
 // updateProperty('Anime 2', 'episodesWatched', 15); // Update episodes watched
-
-for (let i = 0; i < sections.length; i++) {
-  const section = sections[i];
-  const button = document.getElementById(`${section}Button`);
-  const sectionElement = document.getElementById(`${section}Section`);
-
-  button.addEventListener('click', () => {
-    sectionElement.style.display = sectionElement.style.display === 'none' ? 'block' : 'none';
-    button.innerText = button.innerText === 'Hide' ? 'Show' : 'Hide';
-    handleScroll();
-  });
-}
-
-// add event listeners for collapse buttons in for loop
-for (let i = 0; i < sections.length; i++) {
-  const section = sections[i];
-  const collapseBtn = document.getElementsByClassName(`${section}CollapseBtn`);
-
-  // add event listener for collapse buttons, on click hide the button and show expand button
-  collapseBtn[0].addEventListener('click', () => {
-    const sectionElement = document.getElementById(`${section}Section`);
-    sectionElement.style.maxHeight = '300px';
-    sectionElement.style.background = 'linear-gradient(to top, #000, transparent)';
-    sectionElement.classList.toggle('masked');
-    collapseBtn[0].style.display = 'none';
-    const expandBtn = document.getElementById(`${section}ExpandBtn`);
-    expandBtn.style.display = 'flex';
-  });
-}
-
 // Function to filter anime list based on input given in filter element, input is of format property sign value, e.g. rating > 3.
 function filter() {
   const filterInput = document.getElementById('filter').value;
@@ -777,7 +757,7 @@ function filter() {
   console.log(property, sign, value, filteredList.length);
   return filteredList;
 }
-
+// Handler for scrolling
 function handleScroll() {
   var header = document.querySelector('header');
   var stickySections = document.getElementsByClassName('stickysection');
@@ -807,4 +787,219 @@ function handleScroll() {
       animeItem.style.opacity = 1;
     }
   }
+}
+// function to show a popup when update is clicked to show all properties in a form to be updated
+// each row will contain a name of property and input field to update the property in left and right respectively
+// anime status, language, will be a limited list of options to choose from using a dropdown
+// number properties will have a step value to be updated
+// other properties will be text input
+// same functions should be used to add a new anime as well if input anime name is empty
+function updateAnimeForm(animeName) {
+
+  // try to find existing form and remove it
+  var form = document.getElementById('updateAnimeForm');
+  if (form) {
+    document.body.removeChild(form);
+  }
+
+  // try to find existing background and remove it
+  var background = document.getElementsByClassName('fadeBackground')[0];
+  if (background) {
+    document.body.removeChild(background);
+  }
+
+  if (animeName === undefined || animeName === null || animeName === '')
+  {
+    anime = {};
+  }
+  else{
+    var anime = window.animeList.find(anime => anime.name === animeName);
+  }
+
+  form = document.createElement('form');
+  form.setAttribute('id', 'updateAnimeForm');
+  form.setAttribute('class', 'updateAnimeForm');
+
+  const properties = window.animePropertyList;
+  for (let i = 0; i < properties.length; i++) {
+    const property = properties[i];
+    const propertyLabel = document.createElement('label');
+    propertyLabel.setAttribute('class', 'propertyLabelFormUpdate');
+    propertyLabel.setAttribute('for', property);
+    propertyLabel.textContent = `${property.charAt(0).toUpperCase()}${property.slice(1)}: `;
+
+    form.appendChild(propertyLabel);
+
+    const propertyInput = document.createElement('input');
+    propertyInput.setAttribute('type', 'text');
+    propertyInput.setAttribute('name', property);
+    propertyInput.setAttribute('class', 'propertyInputFormUpdate');
+
+    // if the property is status then add a suggestion to inpue
+    if (property === 'status') {
+      // show only limited options for status as suggested in statusOptions
+      const statusOptions = ['long', 'short', 'inactive'];
+      propertyInput.setAttribute('list', 'statusOptions');
+      const datalist = document.createElement('datalist');
+      datalist.setAttribute('id', 'statusOptions');
+      for (let i = 0; i < statusOptions.length; i++) {
+        const option = document.createElement('option');
+        option.setAttribute('value', statusOptions[i]);
+        datalist.appendChild(option);
+      }
+      form.appendChild(datalist);
+    }
+    else{
+      // if property is number then add step value
+      if (window.decimalProperties[property] !== undefined) {
+        propertyInput.setAttribute('type', 'number');
+        propertyInput.setAttribute('step', `${window.decimalProperties[property]}`);
+      }
+      else{
+        propertyInput.setAttribute('type', 'text');
+      }
+    }
+
+    if (anime[property] !== undefined) {
+      propertyInput.setAttribute('value', anime[property]);
+    }
+    form.appendChild(propertyInput);
+  }
+
+  // Add a submit button
+  const submitButton = document.createElement('button');
+  submitButton.textContent = 'Submit';
+  // set margin
+  submitButton.style.margin = '1vh';
+  form.appendChild(submitButton);
+
+  // add event listener to submit button to update anime properties
+  form.addEventListener('submit', (event) => {
+    // updates anime properties
+
+    event.preventDefault();
+    const formData = new FormData(form);
+    console.log('Form submitted with values:', formData);
+
+    // remove form and background
+    document.body.removeChild(form);
+    document.body.removeChild(background);
+
+    const updatedAnime = {};
+    for (let [key, value] of formData) {
+      updatedAnime[key] = value;
+    }
+    const index = window.animeList.findIndex(a => a.name === animeName);
+    if (index !== -1) {
+      window.animeList[index] = updatedAnime;
+      localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
+      renderAnimeList(updatedAnime.status);
+    }
+    else{
+      window.animeList.push(updatedAnime);
+      localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
+      renderAnimeList(updatedAnime.status);
+    }
+  });
+
+  // change CSS to display form in center of screen and display to block
+  form.style.display = 'block';
+
+  // Add a close button
+  const closeButton = document.createElement('button');
+  closeButton.textContent = 'Close';
+  // set margin
+  closeButton.style.margin = '1vh';
+
+  // add event listener to close button to remove form and background
+  closeButton.addEventListener('click', () => {
+    var form = document.getElementById('updateAnimeForm');
+    var background = document.getElementsByClassName('fadeBackground')[0];
+    document.body.removeChild(form);
+    document.body.removeChild(background);
+  });
+
+  form.appendChild(closeButton);
+  document.body.appendChild(form);
+
+  // process link url to get some properties by parsing the link in respective function
+  const processLinkButton = document.createElement('button');
+  processLinkButton.textContent = 'ProLink';
+  // set margin
+  processLinkButton.style.margin = '1vh';
+
+  // add event listener to close button to remove form and background
+  processLinkButton.addEventListener('click', async (event) => {
+    event.preventDefault();
+    url = prompt('Enter link to process:');
+    const animeProps = await processLink(url);
+
+    // update anime properties in form above and update in display
+    const form = document.getElementById('updateAnimeForm');
+    const formData = new FormData(form);
+    
+    for (let [key, value] of Object.entries(animeProps)) {
+      const propertyInput = document.querySelector(`input[name="${key}"]`);
+      // set the value of propertyInput to value to show in form
+      // propertyInput.setAttribute('value', value);
+      // show the updated value in form by displaying the value in form
+      propertyInput.value = value;
+    }
+
+    // update anime properties in form
+    for (let [key, value] of formData) {
+      const propertyInput = document.querySelector(`input[name="${key}"]`);
+      propertyInput.setAttribute('value', value);
+    }
+  });
+  form.appendChild(processLinkButton);
+  
+  // add a backgrround to fade below this
+  background = document.createElement('div');
+  background.setAttribute('class', 'fadeBackground');
+  document.body.appendChild(background);
+}
+
+// ############### FUINCTIONS FOR PARSING DIRECTLY FROM ANIMESITES ###############
+// function to process link and get anime properties
+async function processLink(urlLink) {
+  // if link contains luciferdonghua.in
+  if (urlLink.includes('luciferdonghua.in')) {
+    return await processLuciferDonghua(urlLink);
+  }
+  else{
+    return {};  
+  }
+}
+
+// function to process luciferdonghua.in
+async function processLuciferDonghua(urlLink) {
+  var result = await loadHtmlContent(urlLink);
+  result['link'] = urlLink;
+  console.log(result);
+  return result;
+}
+
+// function to load html content from a url
+async function loadHtmlContent(url) {
+  return new Promise((resolve, reject) => {
+    // hit the local path with a post call to get the html content
+    var fetchUrl = 'http://localhost:8000/';
+    var data = {url: url};
+
+    // fetch data from url
+    fetch(fetchUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+    .then(
+      response => resolve(response.json())
+    )
+    .catch(
+      error => reject(error)
+    );
+  });
 }
