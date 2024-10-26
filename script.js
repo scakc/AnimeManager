@@ -964,7 +964,7 @@ function updateAnimeForm(animeName) {
 // function to process link and get anime properties
 async function processLink(urlLink) {
   // if link contains luciferdonghua.in
-  if (urlLink.includes('luciferdonghua.in')) {
+  if (urlLink.includes('lucifer')) {
     return await processLuciferDonghua(urlLink);
   }
   else{
