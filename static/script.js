@@ -381,6 +381,10 @@ function renderAnimeList(status) {
     // iterate over each child element and set width to 30% of screen width
     for (let i = 0; i < listElement.childElementCount; i++) {
       listElement.children[i].classList.add('horview');
+      // add a hover back background tranparent div
+      const hoverDiv = document.createElement('div');
+      hoverDiv.classList.add('hoverDivBG');
+      listElement.children[i].appendChild(hoverDiv);
     }
   }
 
@@ -532,31 +536,6 @@ function updateEpisodes(animeName, increment) {
 function addNewAnime() {
 
   return updateAnimeForm();
-
-  const numAnimes = 1; //parseInt(prompt('Enter the number of animes you want to add:'));
-  // console.log(numAnimes);
-  for (let i = 0; i < numAnimes; i++) {
-    const newAnime = {};
-
-    const properties = window.animePropertyList;
-
-    for (let j = 0; j < properties.length; j++) {
-      const property = properties[j];
-
-      if (property === 'status') {
-        newAnime[property] = prompt(`Enter Section (long/short/inactive/other):`);
-      }
-      else {
-        newAnime[property] = prompt(`Enter ${property}:`);
-      }
-
-    }
-
-    window.animeList.push(newAnime);
-  }
-
-  localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
-  renderAllSections();
 }
 // Function to load animes
 function loadData() {
@@ -900,6 +879,8 @@ function updateAnimeForm(animeName) {
       localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
       renderAnimeList(updatedAnime.status);
     }
+
+    // TODO: save animes to file
   });
 
   // change CSS to display form in center of screen and display to block
@@ -974,17 +955,17 @@ async function processLink(urlLink) {
 
 // function to process luciferdonghua.in
 async function processLuciferDonghua(urlLink) {
-  var result = await loadHtmlContent(urlLink);
+  var result = await loadHtmlContent(urlLink, 'http://localhost:8000/api/scrapelucifer');
   result['link'] = urlLink;
+  result['episodesWatched'] = 0;
   console.log(result);
   return result;
 }
 
 // function to load html content from a url
-async function loadHtmlContent(url) {
+async function loadHtmlContent(url, fetchUrl) {
   return new Promise((resolve, reject) => {
     // hit the local path with a post call to get the html content
-    var fetchUrl = 'http://localhost:8000/';
     var data = {url: url};
 
     // fetch data from url

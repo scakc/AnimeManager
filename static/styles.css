@@ -413,6 +413,20 @@ span {
   /* border: 1px solid #ebebeb; */
 }
 
+.hoverDivBG{
+  display: none;
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.3);
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  left: 0;
+}
+
+.horview:hover .hoverDivBG{
+  display: block;
+}
+
 .horview input{
   /* display: none; */
   max-width: 20px;
