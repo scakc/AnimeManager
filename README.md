@@ -4,11 +4,12 @@ A anime manager to add and keep track of animes/donghua/other forms of it that y
 ### Steps
 1. Install Python
 2. Run 'pip install -r requirements.txt'
-3. Follow steps from 3. in Local Steps below
-4. Run python app.py
+3. Run 'python ./app.py'
+4. Open http://localhost:8000/ in browser
 5. Click AddAnime
 6. Fill details in prompts like Name, Rating, No. Episodes Watched, Watching URL.
-7. Update the animes if needed as you want.
+7. You can also add URL of anime by clicking the ProLink Button if parsing on that site is supported in app.py
+8. Update the animes if needed as you want.
    
 ![Sample](res/image.jpg)
 
