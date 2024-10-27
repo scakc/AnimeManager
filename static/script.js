@@ -34,6 +34,26 @@ document.addEventListener('DOMContentLoaded', () => {
   loadDataFromLocalStorage();
   // window.animePropertyList = Object.keys(window.animeList[0]);
   renderAllSections();
+
+  // Add a scroll event listener to the animeSection div to scroll horizontally
+  const scrollContainer = document.querySelector('.animeSection');
+  scrollContainer.addEventListener('wheel', (event) => {
+      if (event.deltaY !== 0) {
+          const maxScrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+          console.log(scrollContainer.scrollLeft, maxScrollLeft);
+          if (scrollContainer.scrollLeft >= maxScrollLeft-30 && event.deltaY > 0) {
+              // Scroll down if at the right edge and scrolling down
+              window.scrollBy(0, event.deltaY);
+          } else if (scrollContainer.scrollLeft === 0 && event.deltaY < 0) {
+              // Scroll up if at the left edge and scrolling up
+              window.scrollBy(0, event.deltaY);
+          } else {
+              // Scroll horizontally
+              scrollContainer.scrollLeft += event.deltaY;
+          }
+          event.preventDefault();
+      }
+  });
 });
 // Click event listener for add anime button
 document.getElementById('addAnimeBtn').addEventListener('click', addNewAnime);
@@ -194,6 +214,8 @@ function renderAnimeList(status) {
   const filteredList = filter(window.animeList).filter(anime => anime.status === status);
   const listElement = document.getElementById(`${status}List`);
   listElement.innerHTML = '';
+
+  tobeAppended = [];
 
   // check sortBy property and sort the list accordingly
   console.log("sortBy rating", window.sortBy, window.sortBy === 'rating')
@@ -358,13 +380,18 @@ function renderAnimeList(status) {
 
     // if the checkbox of id hideRecent is checked then do not show the anime in the list
     if (watchedCheckbox.checked && hideRecent.checked) {
-      ;
+      tobeAppended.push(listItem);
     }
     else {
       listElement.appendChild(listItem);
     }
     
   });
+
+  // append the list items to listElement
+  for (let i = 0; i < tobeAppended.length; i++) {
+    listElement.appendChild(tobeAppended[i]);
+  }
 
   // style change
   if (window.options.horviewstyle) {
