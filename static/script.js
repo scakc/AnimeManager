@@ -19,6 +19,9 @@ const sections = ['long', 'short', 'inactive'];
 // ############## Event listeners ##############
 // #############################################
 document.addEventListener('DOMContentLoaded', () => {
+  // load local storage data
+  loadLocalStorage();
+  console.log('Started Rendering data');
   // Load data from localStorage or use initial data
   const storedData = localStorage.getItem('animeList');
   window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
@@ -40,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
   scrollContainer.addEventListener('wheel', (event) => {
       if (event.deltaY !== 0) {
           const maxScrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-          console.log(scrollContainer.scrollLeft, maxScrollLeft);
           if (scrollContainer.scrollLeft >= maxScrollLeft-30 && event.deltaY > 0) {
               // Scroll down if at the right edge and scrolling down
               window.scrollBy(0, event.deltaY);
@@ -54,74 +56,81 @@ document.addEventListener('DOMContentLoaded', () => {
           event.preventDefault();
       }
   });
-});
-// Click event listener for add anime button
-document.getElementById('addAnimeBtn').addEventListener('click', addNewAnime);
-document.getElementById('loadDataBtn').addEventListener('click', loadData);
-document.getElementById('saveDataBtn').addEventListener('click', saveData);
-document.getElementById('resetLocal').addEventListener('click', resetLocalStorage);
-// Event listener for add/del property button
-document.getElementById('addPropBtn').addEventListener('click', addProperty);
-document.getElementById('delPropBtn').addEventListener('click', delProperty);
-// Event listener for options buttons
-document.getElementById('hideRecent').addEventListener('click', () => {
-  const hideRecent = document.getElementById('hideRecent').checked;
-  window.options.hideRecent = hideRecent;
-  updateLocalStorage();
-  renderAllSections();
-});
-// Add an event listener to the radio buttons to store the selected value in the session storage when a radio button is selected
-document.querySelectorAll('input[name="sortBy"]').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-        changeSortBy(this.value);
-    });
-});
-document.getElementById('horviewstyle').addEventListener('change', () => {
-  const horviewstyle = document.getElementById('horviewstyle').checked;
-  window.options.horviewstyle = horviewstyle;
-  updateLocalStorage();
-  renderAllSections();
-  window.location.reload();
-});
-// Add on change listener for element id filter to call function filter
-document.getElementById('filter').addEventListener('change', () => {
-  // Load data from localStorage or use initial data
-  const storedData = localStorage.getItem('animeList');
-  window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
-  loadDataFromLocalStorage();
 
-  renderAllSections();
-}
-);
-window.addEventListener('scroll', handleScroll);
-// add event listeners for show/hide buttons in for loop
-for (let i = 0; i < sections.length; i++) {
-  const section = sections[i];
-  const button = document.getElementById(`${section}Button`);
-  const sectionElement = document.getElementById(`${section}Section`);
+  console.log('Started Adding event listeners');
 
-  button.addEventListener('click', () => {
-    sectionElement.style.display = sectionElement.style.display === 'none' ? 'block' : 'none';
-    button.innerText = button.innerText === 'Hide' ? 'Show' : 'Hide';
-    handleScroll();
+  // Click event listener for add anime button
+  document.getElementById('addAnimeBtn').addEventListener('click', addNewAnime);
+  document.getElementById('loadDataBtn').addEventListener('click', loadData);
+  document.getElementById('saveDataBtn').addEventListener('click', saveData);
+  document.getElementById('resetLocal').addEventListener('click', resetLocalStorage);
+  // Event listener for add/del property button
+  document.getElementById('addPropBtn').addEventListener('click', addProperty);
+  document.getElementById('delPropBtn').addEventListener('click', delProperty);
+  // Event listener for options buttons
+  document.getElementById('hideRecent').addEventListener('click', () => {
+    const hideRecent = document.getElementById('hideRecent').checked;
+    window.options.hideRecent = hideRecent;
+    updateLocalStorage();
+    renderAllSections();
   });
-}
-// add event listeners for collapse buttons in for loop
-for (let i = 0; i < sections.length; i++) {
-  const section = sections[i];
-  const collapseBtn = document.getElementsByClassName(`${section}CollapseBtn`);
+  // Add an event listener to the radio buttons to store the selected value in the session storage when a radio button is selected
+  document.querySelectorAll('input[name="sortBy"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+          changeSortBy(this.value);
+      });
+  });
+  document.getElementById('horviewstyle').addEventListener('change', checkHorViewStyle);
+  // Add on change listener for element id filter to call function filter
+  document.getElementById('filter').addEventListener('change', () => {
+    // Load data from localStorage or use initial data
+    const storedData = localStorage.getItem('animeList');
+    window.animeList = storedData ? JSON.parse(storedData) : window.animeList;
+    loadDataFromLocalStorage();
 
-  // add event listener for collapse buttons, on click hide the button and show expand button
-  collapseBtn[0].addEventListener('click', () => {
+    renderAllSections();
+  }
+  );
+  window.addEventListener('scroll', handleScroll);
+  // add event listeners for show/hide buttons in for loop
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    const button = document.getElementById(`${section}Button`);
     const sectionElement = document.getElementById(`${section}Section`);
-    sectionElement.style.maxHeight = '300px';
-    sectionElement.style.background = 'linear-gradient(to top, #000, transparent)';
-    sectionElement.classList.toggle('masked');
-    collapseBtn[0].style.display = 'none';
-    const expandBtn = document.getElementById(`${section}ExpandBtn`);
-    expandBtn.style.display = 'flex';
-  });
-}
+
+    button.addEventListener('click', () => {
+      sectionElement.style.display = sectionElement.style.display === 'none' ? 'block' : 'none';
+      button.innerText = button.innerText === 'Hide' ? 'Show' : 'Hide';
+      handleScroll();
+    });
+  }
+  // add event listeners for collapse buttons in for loop
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    const collapseBtn = document.getElementsByClassName(`${section}CollapseBtn`);
+
+    // add event listener for collapse buttons, on click hide the button and show expand button
+    collapseBtn[0].addEventListener('click', () => {
+      const sectionElement = document.getElementById(`${section}Section`);
+      sectionElement.style.maxHeight = '300px';
+      sectionElement.style.background = 'linear-gradient(to top, #000, transparent)';
+      sectionElement.classList.toggle('masked');
+      collapseBtn[0].style.display = 'none';
+      const expandBtn = document.getElementById(`${section}ExpandBtn`);
+      expandBtn.style.display = 'flex';
+    });
+  }
+
+  // if checked chenge display of .expandBtn to none
+  const horviewstyleLoad = document.getElementById('horviewstyle').checked;
+  console.log("horviewstyleLoad", horviewstyleLoad);
+  if (horviewstyleLoad) {
+    const expandBtns = document.getElementsByClassName('expandBtn');
+    for (let i = 0; i < expandBtns.length; i++) {
+      expandBtns[i].style.display = 'none';
+    }
+  }
+});
 
 // ####################################
 // ############# FUNCTION #############
@@ -497,6 +506,15 @@ function renderAnimeList(status) {
   for (let i = 0; i < blockDiv.length; i++) {
     blockDiv[i].style.width = firstAnimeItem.offsetWidth * 1.05 + 'px';
   }
+}
+// function to check to prorcess horizontal view style chnage
+function checkHorViewStyle() {
+  // if horizontal view is selected then make the display of .expandBtn to none
+  var horviewstyle = document.getElementById('horviewstyle').checked;
+    window.options.horviewstyle = horviewstyle;
+    updateLocalStorage();
+    renderAllSections();
+    window.location.reload();
 }
 // Function to save anime list
 function saveToFile(data) {
@@ -907,7 +925,8 @@ function updateAnimeForm(animeName) {
       renderAnimeList(updatedAnime.status);
     }
 
-    // TODO: save animes to file
+    // save local storage
+    saveLocalStorage();
   });
 
   // change CSS to display form in center of screen and display to block
@@ -1010,4 +1029,31 @@ async function loadHtmlContent(url, fetchUrl) {
       error => reject(error)
     );
   });
+}
+
+// function to save local storage
+async function saveLocalStorage() {
+  // calls the path /api/saveLocalStorage to save the local storage
+  fetch('http://localhost:8000/api/saveLocalStorage', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(localStorage),
+  })
+}
+
+// function to load local storage
+async function loadLocalStorage() {
+  // calls the path /api/loadLocalStorage to load the local storage
+  fetch('http://localhost:8000/api/loadLocalStorage', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    localStorage = data;
+  })
 }

@@ -1,0 +1,1 @@
+in this folder all the saves will be saved for every anime update/addition
