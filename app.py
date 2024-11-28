@@ -54,24 +54,25 @@ def scrape():
 
 @app.route('/api/saveLocalStorage', methods=['POST'])
 def save():
+    print('Saving to local storage')
     data = request.get_json()
-    animelist = data.get('animelist')
     # save to file system with the name 'animelist.json'
     with open('saves/animelist.json', 'w') as file:
-        json.dump(animelist, file)
+        json.dump(data, file)
     
     return jsonify({'message': 'Saved successfully'})
 
 @app.route('/api/loadLocalStorage', methods=['GET'])
 def load():
     # load from file system with the name 'animelist.json'
+    print('Loading from local storage')
     try:
         with open('saves/animelist.json', 'r') as file:
-            animelist = json.load(file)
+            data = json.load(file)
     except FileNotFoundError:
-        animelist = []
-        
-    return jsonify(animelist)
+        data = {}
+    
+    return jsonify({'data': data})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)
