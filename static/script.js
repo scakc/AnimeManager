@@ -3,6 +3,9 @@
 let animeList = [];
 let iframedata = null;
 let retryloading = 0;
+let dragSrcEl = null;
+let sections = [];
+
 window.animeList = animeList;
 window.animePropertyList = ['name', 'episodesWatched', 'status', 'rating', 'link', 'image'];
 window.visibleProperties = ['rating', 'episodesWatched'];
@@ -14,7 +17,6 @@ window.animeListState = {};
 window.sortBy = 'rating';
 window.options = {};
 
-let  sections = ['long', 'short', 'inactive'];
 
 // #############################################
 // ############## Event listeners ##############
@@ -46,24 +48,30 @@ document.addEventListener('DOMContentLoaded', () => {
   // window.animePropertyList = Object.keys(window.animeList[0]);
   renderAllSections();
 
-  // Add a scroll event listener to the animeSection div to scroll horizontally
-  const scrollContainer = document.querySelector('.animeSection');
-  scrollContainer.addEventListener('wheel', (event) => {
-      if (event.deltaY !== 0) {
-          const maxScrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-          if (scrollContainer.scrollLeft >= maxScrollLeft-30 && event.deltaY > 0) {
-              // Scroll down if at the right edge and scrolling down
-              window.scrollBy(0, event.deltaY);
-          } else if (scrollContainer.scrollLeft === 0 && event.deltaY < 0) {
-              // Scroll up if at the left edge and scrolling up
-              window.scrollBy(0, event.deltaY);
-          } else {
-              // Scroll horizontally
-              scrollContainer.scrollLeft += event.deltaY;
-          }
-          event.preventDefault();
-      }
-  });
+  // add scroll event listener to scrollContainer each element of animeSection
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    const scrollContainer = document.getElementById(`${section}Section`);
+    
+    scrollContainer.addEventListener('wheel', (event) => {
+        // Prevent the default vertical scroll behavior
+        event.preventDefault();
+        if (event.deltaY !== 0) {
+            const maxScrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+            if (scrollContainer.scrollLeft >= maxScrollLeft-30 && event.deltaY > 0) {
+                // Scroll down if at the right edge and scrolling down
+                window.scrollBy(0, event.deltaY);
+            } else if (scrollContainer.scrollLeft === 0 && event.deltaY < 0) {
+                // Scroll up if at the left edge and scrolling up
+                window.scrollBy(0, event.deltaY);
+            } else {
+                // Scroll horizontally
+                scrollContainer.scrollLeft += event.deltaY;
+            }
+            event.preventDefault();
+        }
+    });
+  }
 
   console.log('Started Adding event listeners');
 
@@ -111,7 +119,21 @@ document.addEventListener('DOMContentLoaded', () => {
       button.innerText = button.innerText === 'Hide' ? 'Show' : 'Hide';
       handleScroll();
     });
+
+    // rename buttons
+    const renameButton = document.getElementById(`${section}Rename`);
+    renameButton.addEventListener('click', () => {
+      console.log("rename button clicked");
+      renameSection(section);
+    });
   }
+
+  // Adjust margin on page load
+  window.addEventListener('load', adjustMainMargin);
+
+  // Adjust margin on window resize
+  window.addEventListener('resize', adjustMainMargin);
+
   // add event listeners for collapse buttons in for loop
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
@@ -641,6 +663,7 @@ function updateLocalStorage() {
   localStorage.setItem('decimalProperties', JSON.stringify(window.decimalProperties)); // Update decimalProperties
   localStorage.setItem('animeListState', JSON.stringify(window.animeListState)); // Update animeListState
   localStorage.setItem('options', JSON.stringify(window.options)); // Update options
+  localStorage.setItem('sections', JSON.stringify(sections)); // Update sections
   saveLocalStorage();
   console.log("working", window.options);
 }
@@ -668,6 +691,10 @@ function loadDataFromLocalStorage() {
   window.sortBy = window.options.sortBy;
   const hideRecent = document.getElementById('hideRecent');
   hideRecent.checked = window.options.hideRecent;
+
+  // try to get sections from localStorage
+  const sortedSections = localStorage.getItem('sections');
+  sections = sortedSections ? JSON.parse(sortedSections) : sections;
 
   // load anime sections if not loaded
   generateAnimeSections(window.animeList);
@@ -877,7 +904,7 @@ function updateAnimeForm(animeName) {
     // if the property is status then add a suggestion to inpue
     if (property === 'status') {
       // show only limited options for status as suggested in statusOptions
-      const statusOptions = ['long', 'short', 'inactive'];
+      const statusOptions = sections;
       propertyInput.setAttribute('list', 'statusOptions');
       const datalist = document.createElement('datalist');
       datalist.setAttribute('id', 'statusOptions');
@@ -1002,6 +1029,204 @@ function updateAnimeForm(animeName) {
   document.body.appendChild(background);
 }
 
+// generate anime sections
+function generateAnimeSections(animeData) {
+  const mainElement = document.querySelector('main');
+
+  if (!mainElement) {
+    console.error('Main element not found');
+    return;
+  }
+
+  existingSections = document.getElementsByClassName('animeSectionClass');
+  
+
+  existingSectionNames = [];
+  updatedStatus = [];
+  existingStatus = [];
+  for (let i = 0; i < existingSections.length; i++) {
+    existingSectionNames.push(existingSections[i].id);
+    updatedStatus.push(existingSections[i].id.split('Section')[0]);
+    existingStatus.push(existingSections[i].id.split('Section')[0]);
+  }
+
+  console.log('Generating anime sections', animeData);
+  console.log('Existing section names', existingSectionNames);
+  console.log('Sections stored', sections);
+  animeData.forEach(anime => {
+    sectionExists = existingSectionNames.includes(anime.status+ 'Section');
+    // console.log('Section exists', sectionExists, existingSectionNames);
+    if (!sectionExists) {
+      existingSectionNames.push(anime.status + 'Section');
+    }
+    statusExists = updatedStatus.includes(anime.status);
+    if (!statusExists) {
+      updatedStatus.push(anime.status)
+    }  
+  });
+
+  // modify section to have only elements present in existingStatus but in order of sections
+  // if a section is not present in existingStatus then remove the section
+  // if a section is present in existingStatus but not in sections then add the section at the end
+  var finalSections = [];
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    const sectionExists = updatedStatus.includes(section);
+    if (!sectionExists) {
+      continue;
+    }
+    finalSections.push(section);
+  }
+
+  // add sections that are not present in existingStatus
+  for (let i = 0; i < updatedStatus.length; i++) {
+    const section = updatedStatus[i];
+    const sectionExists = finalSections.includes(section);
+    if (!sectionExists) {
+      finalSections.push(section);
+    }
+  }
+
+  sections = finalSections;
+
+  // generate sections
+  console.log('Final sections', finalSections);
+  for (let i = 0; i < sections.length; i++) {
+
+    animeStatus = sections[i];
+
+    // if existingStatus.includes(animeStatus)
+    if (existingStatus.includes(animeStatus)) {
+      continue;
+    }
+
+    console.log('Generating section for status', animeStatus);
+    const blockDiv = document.createElement('div');
+    blockDiv.className = 'block';
+    blockDiv.draggable = true; // Make the block draggable
+    blockDiv.id = animeStatus + 'Block';
+
+    const stickySectionDiv = document.createElement('div');
+    stickySectionDiv.className = 'stickysection';
+
+    const h2Element = document.createElement('h2');
+    h2Element.innerHTML = `${animeStatus} <button id="${animeStatus}Button" class="sectionButton">Hide</button><button id="${animeStatus}Rename" class="sectionButton">Rename</button><button class="${animeStatus}CollapseBtn animeCollapseBtn fas fa-angle-double-up"></button>`;
+
+    stickySectionDiv.appendChild(h2Element);
+    blockDiv.appendChild(stickySectionDiv);
+
+    const animeSectionDiv = document.createElement('div');
+    animeSectionDiv.id = `${animeStatus}Section`;
+    animeSectionDiv.className = 'animeSection masked animeSectionClass';
+
+    const ulElement = document.createElement('ul');
+    ulElement.id = `${animeStatus}List`;
+
+    animeSectionDiv.appendChild(ulElement);
+    blockDiv.appendChild(animeSectionDiv);
+
+    mainElement.appendChild(blockDiv);
+  }
+
+  // Add drag and drop event listeners
+  const blocks = document.querySelectorAll('.block');
+  console.log('adding drag events to', blocks);
+  blocks.forEach(block => {
+    block.addEventListener('dragstart', handleDragStart);
+    block.addEventListener('dragover', handleDragOver);
+    block.addEventListener('drop', handleDrop);
+    block.addEventListener('dragend', handleDragEnd);
+  });
+}
+
+function handleDragStart(e) {
+  dragSrcEl = this;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', this.innerHTML);
+}
+
+function handleDragOver(e) {
+  if (e.preventDefault) {
+    e.preventDefault(); // Necessary. Allows us to drop.
+  }
+  e.dataTransfer.dropEffect = 'move'; // See the section on the DataTransfer object.
+  return false;
+}
+
+function handleDrop(e) {
+  if (e.stopPropagation) {
+    e.stopPropagation(); // Stops some browsers from redirecting.
+  }
+
+  // Don't do anything if dropping the same block we're dragging.
+  if (dragSrcEl !== this) {
+    // Set the source block's HTML to the HTML of the block we dropped on.
+    dragSrcEl.innerHTML = this.innerHTML;
+    this.innerHTML = e.dataTransfer.getData('text/html');
+
+    // Re-add drag and drop event listeners to the new elements
+    // const blocks = document.querySelectorAll('.block');
+    const blocks = document.querySelectorAll('.block');
+    blocks.forEach(block => {
+      block.addEventListener('dragstart', handleDragStart);
+      block.addEventListener('dragover', handleDragOver);
+      block.addEventListener('drop', handleDrop);
+      block.addEventListener('dragend', handleDragEnd);
+    });
+  }
+  return false;
+}
+
+// Function to render all sections
+function handleDragEnd() {
+  isDragging = false;
+  console.log('Drag ended');
+  // update section order
+  const mainElement = document.querySelector('main');
+  const blocks = mainElement.querySelectorAll('.block');
+  const newSections = [];
+  blocks.forEach(block => {
+    const sectionName = block.querySelector('h2').textContent.split(' ')[0];
+    newSections.push(sectionName);
+  });
+
+  sections = newSections;
+  updateLocalStorage();
+  window.location.reload();
+}
+
+// function to rename a section
+function renameSection(section) {
+  console.log('Renaming section', section);
+
+  // simplest way to do this is rename status in animeList and re-render all sections
+  const newName = prompt('Enter new name for section:');
+  const animeList = window.animeList;
+  for (let i = 0; i < animeList.length; i++) {
+    if (animeList[i].status === section) {
+      animeList[i].status = newName;
+    }
+  }
+
+  // update localStorage
+  updateLocalStorage();
+
+  // reload window
+  window.location.reload();
+}
+
+function adjustMainMargin() {
+  const header = document.querySelector('header');
+  const main = document.querySelector('main');
+
+  if (header && main) {
+    const headerHeight = header.offsetHeight;
+    const windowHeight = window.innerHeight;
+    var offsetinVH = headerHeight / windowHeight * 100;
+    main.style.marginTop =  `${offsetinVH-8}vh`;
+  }
+}
+
 // ############### FUINCTIONS FOR PARSING DIRECTLY FROM ANIMESITES ###############
 // function to process link and get anime properties
 async function processLink(urlLink) {
@@ -1079,57 +1304,4 @@ async function loadLocalStorage() {
 
     loadDataFromLocalStorage();
   })
-}
-
-// generate anime sections
-function generateAnimeSections(animeData) {
-  const mainElement = document.querySelector('main');
-
-  if (!mainElement) {
-    console.error('Main element not found');
-    return;
-  }
-
-  existingSections = document.getElementsByClassName('animeSectionClass');
-  existingSectionNames = [];
-  for (let i = 0; i < existingSections.length; i++) {
-    existingSectionNames.push(existingSections[i].id);
-  }
-
-  console.log('Generating anime sections', animeData);
-  animeData.forEach(anime => {
-    sectionExists = existingSectionNames.includes(anime.status+ 'Section');
-    console.log('Section exists', sectionExists, existingSectionNames);
-    if (!sectionExists) {
-      console.log('Generating section for status', anime.status);
-      const blockDiv = document.createElement('div');
-      blockDiv.className = 'block';
-
-      const stickySectionDiv = document.createElement('div');
-      stickySectionDiv.className = 'stickysection';
-
-      const h2Element = document.createElement('h2');
-      h2Element.innerHTML = `${anime.status} <button id="${anime.status}Button">Hide</button><button class="${anime.status}CollapseBtn animeCollapseBtn fas fa-angle-double-up"></button>`;
-
-      stickySectionDiv.appendChild(h2Element);
-      blockDiv.appendChild(stickySectionDiv);
-
-      const animeSectionDiv = document.createElement('div');
-      animeSectionDiv.id = `${anime.status}Section`;
-      animeSectionDiv.className = 'animeSection masked animeSectionClass';
-
-      const ulElement = document.createElement('ul');
-      ulElement.id = `${anime.status}List`;
-
-      animeSectionDiv.appendChild(ulElement);
-      blockDiv.appendChild(animeSectionDiv);
-
-      mainElement.appendChild(blockDiv);
-      existingSectionNames.push(anime.status + 'Section');
-
-      if (!sections.includes(anime.status)) {
-        sections.push(anime.status);
-      }
-    }
-  });
 }

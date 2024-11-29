@@ -29,6 +29,7 @@ body::-webkit-scrollbar-thumb {
   background: linear-gradient(to bottom, #000, #1e90ff, #000);
 }
 
+
 header {
   position: fixed;
   padding-top: 2vh;
@@ -38,6 +39,10 @@ header {
   z-index: 10;
   /* Ensure the header is above other content */
   /* max-height: 12vh; */
+}
+
+main{
+  margin-top: 5vh;
 }
 
 h1 {
@@ -51,6 +56,7 @@ h1 {
   z-index: 9;
   margin: 2% 0 2% 0;
   /* Ensure the header is above other content */
+  width: 90vw;
 }
 
 h2 {
@@ -58,6 +64,7 @@ h2 {
   /* Light blue link color */
   overflow: hidden;
   /* height: 2vw; */
+  width: 100%;
 }
 
 li {
@@ -176,7 +183,8 @@ input {
 
 .block {
   /* display: inline-block; */
-  width: fit-content;
+  width: 90vw;
+  padding: 0vh 15vw 0vh 0vw;
 }
 
 span {
@@ -317,6 +325,10 @@ span {
   scrollbar-color: royalblue #f9f9f9;
   overflow: visible;
   /* Change to match your design */
+}
+
+.sectionButton{
+  background-color: #1b1b1b;
 }
 
 .addPropBtnDiv {
