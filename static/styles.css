@@ -472,8 +472,12 @@ span {
   background-color: rgba(0, 0, 0, 0.7);
 }
 
-.horview .deleteBtn{
+.horview .deleteBtn {
   margin-left: 102px;
+}
+
+.markInactiveBtn{
+  left: 112px;
 }
 
 .horview span{

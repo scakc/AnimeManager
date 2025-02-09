@@ -60,10 +60,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxScrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
             if (scrollContainer.scrollLeft >= maxScrollLeft-30 && event.deltaY > 0) {
                 // Scroll down if at the right edge and scrolling down
-                window.scrollBy(0, event.deltaY);
+                // window.scrollBy(0, event.deltaY);
             } else if (scrollContainer.scrollLeft === 0 && event.deltaY < 0) {
                 // Scroll up if at the left edge and scrolling up
-                window.scrollBy(0, event.deltaY);
+                // window.scrollBy(0, event.deltaY);
             } else {
                 // Scroll horizontally
                 scrollContainer.scrollLeft += event.deltaY;
@@ -408,6 +408,27 @@ function renderAnimeList(status) {
       }
     });
     listItem.appendChild(deleteButton);
+
+    //  Add mark inactive button
+    const markInactiveButton = document.createElement('button');
+    markInactiveButton.classList.add('markInactiveBtn');
+    // ban icon
+    markInactiveButton.textContent = 'Inactive';
+    markInactiveButton.innerHTML = '<i class="fa fa-ban" style="color:red;"></i>'; // Use a Font Awesome trash icon
+    markInactiveButton.addEventListener('click', () => {
+      const confirmation = confirm('Are you sure you want to mark this anime as inactive?');
+      if (confirmation) {
+        const index = window.animeList.findIndex(a => a.name === anime.name);
+        if (index !== -1) {
+          window.animeList[index].status = 'Inactive'; // Mark the anime as inactive
+          localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
+          // save to local storage
+          saveLocalStorage();
+          window.location.reload();
+        }
+      }
+    });
+    listItem.appendChild(markInactiveButton);
 
     // if horizontal view is selected and anime has image link then add image as background
     if (window.options.horviewstyle && anime.image !== undefined) {
@@ -776,6 +797,9 @@ function updateProperty(animeName, property, value) {
     localStorage.setItem('animeList', JSON.stringify(window.animeList)); // Update localStorage
     renderAnimeList(anime.status);
   }
+
+  // save to local storage
+  saveLocalStorage();
 }
 // Usage example:
 // updateProperty('Anime 1', 'rating', 5); // Update anime rating
@@ -1192,7 +1216,7 @@ function handleDragEnd() {
 
   sections = newSections;
   updateLocalStorage();
-  window.location.reload();
+  window.location.reload();  
 }
 
 // function to rename a section
@@ -1234,6 +1258,9 @@ async function processLink(urlLink) {
   if (urlLink.includes('lucifer') || urlLink.includes('mister')) {
     return await processLuciferDonghua(urlLink);
   }
+  else if (urlLink.includes('gogoanime')) {
+    return await processGogoAnime(urlLink);
+  }
   else{
     return {};  
   }
@@ -1242,6 +1269,15 @@ async function processLink(urlLink) {
 // function to process luciferdonghua.in
 async function processLuciferDonghua(urlLink) {
   var result = await loadHtmlContent(urlLink, 'http://localhost:8000/api/scrapelucifer');
+  result['link'] = urlLink;
+  result['episodesWatched'] = 0;
+  console.log(result);
+  return result;
+}
+
+// process scrapegogo
+async function processGogoAnime(urlLink) {
+  var result = await loadHtmlContent(urlLink, 'http://localhost:8000/api/scrapegogo');
   result['link'] = urlLink;
   result['episodesWatched'] = 0;
   console.log(result);
