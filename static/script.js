@@ -696,7 +696,7 @@ function loadDataFromLocalStorage() {
 
   console.log('Loaded data:', localStorage);
 
-  if (window.animeList.length === 0) {
+  if (window.animeList === null || window.animeList.length === 0) {
     return;
   }
 
