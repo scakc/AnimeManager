@@ -5,6 +5,7 @@ let iframedata = null;
 let retryloading = 0;
 let dragSrcEl = null;
 let sections = [];
+let blockListKeywords = ["gogo"];
 
 window.animeList = animeList;
 window.animePropertyList = ['name', 'episodesWatched', 'status', 'rating', 'link', 'image'];
@@ -434,7 +435,18 @@ function renderAnimeList(status) {
 
     // if horizontal view is selected and anime has image link then add image as background
     if (window.options.horviewstyle && anime.image !== undefined) {
-      listItem.style.backgroundImage = `url(${anime.image})`;
+      var urlContainsBlockListKeywords = false;
+      // append the list items to listElement
+      for (let i = 0; i < blockListKeywords.length; i++) {
+        if (anime.image.includes(blockListKeywords[i])) {
+          urlContainsBlockListKeywords = true;
+          break;
+        }
+      }
+
+      if (!urlContainsBlockListKeywords){
+        listItem.style.backgroundImage = `url(${anime.image})`;
+      }
       listItem.style.backgroundSize = 'cover';
       listItem.style.backgroundPosition = 'center';
       listItem.style.backgroundRepeat = 'no-repeat';
