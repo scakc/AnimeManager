@@ -131,17 +131,6 @@ button:hover {
   /* Darker red on hover */
 }
 
-.editable-rating {
-  width: 50px;
-  margin-left: 5px;
-  border: 1px solid #1b1b1b;
-  /* Light gray border */
-  border-radius: 5px;
-  padding: 2px;
-  color: #f0f0f0;
-  /* Light gray text */
-}
-
 .animeSectionClass {
   /* background-color: #3b3b3b; Slightly lighter gray background */
   color: #f0f0f0;
@@ -539,4 +528,24 @@ span {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
+}
+
+.editablerating {
+  width: 50px;
+  margin-left: 5px;
+  border: 1px solid #1b1b1b;
+  /* Light gray border */
+  border-radius: 5px;
+  padding: 1px;
+  color: #f0f0f0;
+  /* Light gray text */
+  height: 35px;
+  float: left;
+}
+
+/* .editable rating spinner  */
+.editablerating::-webkit-inner-spin-button {
+  /* margin: 0; */
+  height: 30px;
+  float:right;
 }

@@ -344,20 +344,22 @@ function renderAnimeList(status) {
     // add visible properties to list item
     for (let i = 0; i < window.visibleProperties.length; i++) {
       const property = window.visibleProperties[i];
-      const propertyInput = document.createElement('input');
-      propertyInput.setAttribute('type', 'number');
 
       const isDecimal = window.decimalProperties[property] !== undefined;
-
+      // var propertyInput;
+      const propertyInput = document.createElement('input');
+   
       if (isDecimal) {
         propertyInput.setAttribute('type', 'number');
-        propertyInput.setAttribute('step', `${decimalProperties[property]}`);
+        var stepValue = window.decimalProperties[property];
+        propertyInput.setAttribute('step', `${stepValue}`);
       }
       else {
+        propertyInput = document.createElement('input');
         propertyInput.setAttribute('type', 'text');
       }
 
-      propertyInput.setAttribute('class', 'editable-rating');
+      propertyInput.setAttribute('class', 'editablerating');
       propertyInput.classList.add(`${property}Input`);
       propertyInput.setAttribute('value', anime[property]);
       propertySpan = document.createElement('span');
